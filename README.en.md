@@ -4,12 +4,14 @@
 [![Español](https://img.shields.io/badge/Idioma-Espa%C3%B1ol-red?style=for-the-badge&logo=googletranslate&logoColor=white)](README.md)
 [![English](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=googletranslate&logoColor=white)](#)
 
-<!-- Banner -->
-# 🅿️ UDLAP Tickets
+<!-- Logos -->
+<img src="assets/images/udlap-logo.png" alt="UDLAP" height="80">
+<br><br>
+<img src="assets/images/udlap-tickets-logo.png" alt="UDLAP Tickets" height="150">
+
+# UDLAP Tickets
 
 **Digital ticketing system for university parking**
-
-*Universidad de las Américas Puebla*
 
 ---
 
