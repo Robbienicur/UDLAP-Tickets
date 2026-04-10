@@ -22,6 +22,8 @@ UDLAP Tickets es una app desarrollada en Flutter que permite a los estudiantes y
 
 ## Instalacion
 
+Este proyecto es open source. Cualquier persona es libre de clonar, modificar y contribuir al desarrollo de la aplicacion.
+
 1. Clonar el repositorio
 ```bash
 git clone https://github.com/Robbienicur/UDLAP-Tickets.git
@@ -40,3 +42,9 @@ flutter run
 ## Equipo
 
 Proyecto desarrollado para la materia de Ingenieria de Software - UDLAP.
+
+- Robbie Nicolas Curioso de Salazar
+- Jose Luis Godinez Carillo
+- Hector Jesus Nuñez Tecpanecatl
+- Sebastian Torres Morales
+- Ricardo Carballido Rosas
