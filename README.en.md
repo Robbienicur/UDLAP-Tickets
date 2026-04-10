@@ -242,11 +242,13 @@ UDLAP-Tickets/
 
 Project developed for the **Software Engineering** course — UDLAP
 
-| Member | Role |
-|:------:|:----:|
-| **Robbie Nicolas Curioso de Salazar** | Developer |
+The team follows the **Scrum** framework, organizing development in Sprints with incremental deliveries.
+
+| Member | Scrum Role |
+|:------:|:----------:|
+| **Robbie Nicolas Curioso de Salazar** | Product Owner |
+| **Héctor Jesús Núñez Tecpanecatl** | Scrum Master |
 | **José Luis Godínez Carillo** | Developer |
-| **Héctor Jesús Núñez Tecpanecatl** | Developer |
 | **Sebastián Torres Morales** | Developer |
 | **Ricardo Carballido Rosas** | Developer |
 

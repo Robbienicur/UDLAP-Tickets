@@ -242,13 +242,15 @@ UDLAP-Tickets/
 
 Proyecto desarrollado para la materia de **Ingeniería de Software** — UDLAP
 
-| Integrante | Rol |
-|:----------:|:---:|
-| **Robbie Nicolas Curioso de Salazar** | Desarrollador |
-| **José Luis Godínez Carillo** | Desarrollador |
-| **Héctor Jesús Núñez Tecpanecatl** | Desarrollador |
-| **Sebastián Torres Morales** | Desarrollador |
-| **Ricardo Carballido Rosas** | Desarrollador |
+El equipo trabaja bajo el framework **Scrum**, organizando el desarrollo en Sprints con entregas incrementales.
+
+| Integrante | Rol Scrum |
+|:----------:|:---------:|
+| **Robbie Nicolas Curioso de Salazar** | Product Owner |
+| **Héctor Jesús Núñez Tecpanecatl** | Scrum Master |
+| **José Luis Godínez Carillo** | Developer |
+| **Sebastián Torres Morales** | Developer |
+| **Ricardo Carballido Rosas** | Developer |
 
 </div>
 
