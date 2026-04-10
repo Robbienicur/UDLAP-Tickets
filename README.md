@@ -1,21 +1,29 @@
 <div align="center">
 
-<!-- Language Toggle -->
-[![Español](https://img.shields.io/badge/Idioma-Espa%C3%B1ol-red?style=for-the-badge&logo=googletranslate&logoColor=white)](#)
-[![English](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=googletranslate&logoColor=white)](README.en.md)
+<img src="assets/images/udlap-logo.png" alt="UDLAP" height="45">
 
-<!-- Logos -->
-<img src="assets/images/udlap-logo.png" alt="UDLAP" height="80">
 <br><br>
+
+<a href="#"><img src="https://hatscripts.github.io/circle-flags/flags/mx.svg" width="28" alt="Español"></a>
+&nbsp;
+<a href="README.en.md"><img src="https://hatscripts.github.io/circle-flags/flags/us.svg" width="28" alt="English"></a>
+
+</div>
+
+---
+
+<div align="center">
+
 <img src="assets/images/udlap-tickets-logo.png" alt="UDLAP Tickets" height="150">
+
+<br>
 
 # UDLAP Tickets
 
 **Sistema de boletos digitales para el estacionamiento universitario**
 
----
+<br>
 
-<!-- Badges -->
 [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
 [![Material Design](https://img.shields.io/badge/Material%20Design%203-757575?style=for-the-badge&logo=materialdesign&logoColor=white)](https://m3.material.io)
