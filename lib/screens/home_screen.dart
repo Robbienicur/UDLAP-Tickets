@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'confirmacion_screen.dart';
 
+class Boleto {
+  final String id;
+  String estado;
+
+  Boleto({required this.id, this.estado = 'Disponible'});
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -10,8 +17,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  final int _cantidadBoletos = 0;
+  final List<Boleto> _misBoletos = [];
   int _boletosComprar = 1;
+
+  int get _cantidadDisponibles =>
+      _misBoletos.where((b) => b.estado == 'Disponible').length;
 
   List<Widget> _buildPages() {
     return [
@@ -49,10 +59,54 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Tienes: $_cantidadBoletos',
+            'Tienes: $_cantidadDisponibles disponibles',
             style: const TextStyle(fontSize: 18),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 15),
+          Expanded(
+            child: _misBoletos.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No tienes boletos disponibles. ¡Compra uno para empezar!',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _misBoletos.length,
+                    itemBuilder: (context, index) {
+                      final boleto = _misBoletos[index];
+                      final isDisponible = boleto.estado == 'Disponible';
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        child: ListTile(
+                          leading: Icon(
+                            isDisponible ? Icons.local_activity : Icons.history,
+                            color: isDisponible ? Colors.green : Colors.grey,
+                            size: 30,
+                          ),
+                          title: Text('Boleto: ${boleto.id}'),
+                          subtitle: Text('Estado: ${boleto.estado}'),
+                          trailing: isDisponible
+                              ? ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      boleto.estado = 'Usado';
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text('Usar'),
+                                )
+                              : null,
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          const SizedBox(height: 15),
           const Text(
             'Comprar Boletos',
             style: TextStyle(
@@ -91,8 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 15),
           Center(
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ConfirmacionScreen(
@@ -100,6 +154,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 );
+                
+                if (result == true) {
+                  setState(() {
+                    for (int i = 0; i < _boletosComprar; i++) {
+                      _misBoletos.add(Boleto(
+                        id: 'BOL-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}-$i',
+                      ));
+                    }
+                  });
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('¡Compra exitosa!')),
+                    );
+                  }
+                }
               },
               child: const Text('Comprar'),
             ),
