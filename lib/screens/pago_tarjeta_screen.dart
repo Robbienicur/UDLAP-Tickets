@@ -122,7 +122,7 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context, true);
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15),
