@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'registro_screen.dart';
 import 'home_screen.dart';
+import 'recuperar_contraseña.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -68,14 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
-  }
-
-  void _recuperarContrasena() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Función de recuperación aún no implementada'),
-      ),
     );
   }
 
@@ -211,7 +204,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: const Text('Registrarse'),
                         ),
                         TextButton(
-                          onPressed: _recuperarContrasena,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const RecuperarContrasenaScreen(),
+                              ),
+                            );
+                          },
                           child: const Text('Olvidé mi contraseña'),
                         ),
                         TextButton(
