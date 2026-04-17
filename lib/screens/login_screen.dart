@@ -38,7 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void _entrarComoInvitado() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      MaterialPageRoute(
+          builder: (context) => const HomeScreen(esInvitado: true)),
     );
   }
 
