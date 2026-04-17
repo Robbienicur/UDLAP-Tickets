@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'registro_screen.dart';
 import 'home_screen.dart';
+import 'recuperar_contraseña.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -98,7 +99,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // TODO: implementar recuperar contraseña
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const RecuperarContrasenaScreen(),
+                      ),
+                    );
                   },
                   child: const Text('Olvidé mi contraseña'),
                 ),
