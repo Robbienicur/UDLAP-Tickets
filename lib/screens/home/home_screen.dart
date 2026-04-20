@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'confirmacion_screen.dart';
-import 'login_screen.dart';
+import '../tickets/confirmacion_screen.dart';
+import '../auth/login_screen.dart';
 
 class Boleto {
   final String id;
