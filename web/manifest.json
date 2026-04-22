@@ -1,6 +1,6 @@
 {
-    "name": "boletos_app",
-    "short_name": "boletos_app",
+    "name": "UDLAP Tickets",
+    "short_name": "UDLAP Tickets",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
