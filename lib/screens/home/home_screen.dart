@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
-import 'confirmacion_screen.dart';
+import '../tickets/confirmacion_screen.dart';
+import '../auth/login_screen.dart';
 
 class Boleto {
   final String id;
@@ -18,7 +19,9 @@ class Boleto {
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool esInvitado;
+
+  const HomeScreen({super.key, this.esInvitado = false});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -62,13 +65,98 @@ class _HomeScreenState extends State<HomeScreen> {
       // Mis Boletos
       _buildBoletosPage(),
       // Mi Perfil
-      const Center(
-        child: Text(
-          'Mi Perfil',
-          style: TextStyle(fontSize: 24),
-        ),
-      ),
+      _buildPerfilPage(),
     ];
+  }
+
+  Widget _buildPerfilPage() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Mi Perfil',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.person, size: 40),
+              title: Text(widget.esInvitado ? 'Invitado' : 'Estudiante UDLAP'),
+              subtitle: Text(widget.esInvitado
+                  ? 'Sesión de invitado'
+                  : 'correo@udlap.mx'),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ListTile(
+            leading: const Icon(Icons.description),
+            title: const Text('Términos y Condiciones'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Términos y Condiciones'),
+                  content: const Text(
+                      'Aquí irán los términos y condiciones de uso de la aplicación.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cerrar'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.help_outline),
+            title: const Text('Ayuda'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Ayuda'),
+                  content: const Text(
+                      'Aquí irá la sección de ayuda y preguntas frecuentes.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cerrar'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const LoginScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+              ),
+              child: const Text('Cerrar Sesión'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildBoletosPage() {
