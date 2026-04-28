@@ -53,14 +53,20 @@ class _GooglePayScreenState extends State<GooglePayScreen> {
 
     await Future.delayed(const Duration(seconds: 2));
 
+    if (!mounted) return;
     setState(() => cargando = false);
 
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const PaymentSuccessScreen(),
-        ),
+    final ok = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PaymentSuccessScreen(),
+      ),
     );
+
+    if (!mounted) return;
+    if (ok == true) {
+      Navigator.pop(context, true);
+    }
   }
 
   @override
