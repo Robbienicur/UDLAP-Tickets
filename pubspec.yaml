@@ -36,8 +36,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   qr_flutter: ^4.1.0
   intl: ^0.18.1
-  # REMOVIBLE-PRUEBA: anuncios de Google AdMob (demo con test IDs)
-  google_mobile_ads: ^5.2.0
 
 dev_dependencies:
   flutter_test:
