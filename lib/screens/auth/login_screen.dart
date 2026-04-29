@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'registro_screen.dart';
-import 'home_screen.dart';
+import '../home/home_screen.dart';
 import 'recuperar_contraseña.dart';
 
 class LoginScreen extends StatefulWidget {

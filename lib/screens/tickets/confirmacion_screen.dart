@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'pago_tarjeta_screen.dart';
 import 'saldo_screen.dart';
 import 'recargar_saldo_screen.dart';
+import '../payment/payment_other_methods_screen.dart';
 
 class ConfirmacionScreen extends StatelessWidget {
   final int cantidadBoletos;
@@ -80,8 +81,19 @@ class ConfirmacionScreen extends StatelessWidget {
                     SizedBox(
                       width: 200,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context, true);
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PaymentOtherMethodsScreen(
+                                cantidad: cantidadBoletos,
+                                total: cantidadBoletos * 25,
+                              ),
+                            ),
+                          );
+                          if (result == true && context.mounted) {
+                            Navigator.pop(context, true);
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 15),
