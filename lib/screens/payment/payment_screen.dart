@@ -2,37 +2,7 @@ import 'package:flutter/material.dart';
 import 'payment_card_screen.dart';
 import 'payment_balance_screen.dart';
 import 'payment_other_methods_screen.dart';
-
-const Color authBackground = Color(0xFFF3F4F8);
-const Color authPrimary = Color(0xFF4A6C94);
-const Color authSecondary = Color(0xFFE8EAF0);
-const Color authBorder = Color(0xFF8A8A8A);
-const Color authIcon = Color(0xFF555B66);
-const Color authLabel = Color(0xFF6A6A6A);
-
-ButtonStyle paymentPrimaryButtonStyle() {
-  return ElevatedButton.styleFrom(
-    elevation: 1,
-    backgroundColor: authSecondary,
-    foregroundColor: authPrimary,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
-    ),
-  );
-}
-
-ButtonStyle paymentOutlinedButtonStyle() {
-  return ElevatedButton.styleFrom(
-    elevation: 1,
-    backgroundColor: authSecondary,
-    foregroundColor: authPrimary,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
-    ),
-  );
-}
+import '../../theme/app_theme.dart';
 
 class PaymentScreen extends StatefulWidget {
   final int cantidad;
@@ -49,31 +19,31 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  String metodoSeleccionado = "";
+  String metodoSeleccionado = '';
   int saldoActual = 100;
 
   IconData _iconoMetodo(String id) {
     switch (id) {
-      case "tarjeta":
+      case 'tarjeta':
         return Icons.credit_card_outlined;
-      case "saldo":
+      case 'saldo':
         return Icons.account_balance_wallet_outlined;
       default:
-        return Icons.more_horiz;
+        return Icons.more_horiz_rounded;
     }
   }
 
   Future<void> _continuarConMetodoSeleccionado() async {
     if (metodoSeleccionado.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Selecciona un metodo de pago")),
+        const SnackBar(content: Text('Selecciona un método de pago')),
       );
       return;
     }
 
     dynamic resultado;
 
-    if (metodoSeleccionado == "tarjeta") {
+    if (metodoSeleccionado == 'tarjeta') {
       resultado = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -85,10 +55,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
     }
 
-    if (metodoSeleccionado == "saldo") {
+    if (metodoSeleccionado == 'saldo') {
       if (saldoActual < widget.total) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Saldo insuficiente")),
+          const SnackBar(content: Text('Saldo insuficiente')),
         );
         return;
       }
@@ -104,7 +74,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
     }
 
-    if (metodoSeleccionado == "otros") {
+    if (metodoSeleccionado == 'otros') {
       resultado = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -121,53 +91,80 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-  Widget metodoPago(String id, String texto) {
-    bool seleccionado = metodoSeleccionado == id;
+  Widget _metodoPago(String id, String texto, String subtitulo) {
+    final seleccionado = metodoSeleccionado == id;
 
-    return GestureDetector(
-      onTap: () async {
-        setState(() {
-          metodoSeleccionado = id;
-        });
-
-        await _continuarConMetodoSeleccionado();
-      },
-
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: seleccionado ? authSecondary : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: seleccionado ? authPrimary : authBorder,
-            width: seleccionado ? 1.4 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              _iconoMetodo(id),
-              color: seleccionado ? authPrimary : authIcon,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        color: seleccionado ? AppColors.primaryContainer : AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () async {
+            setState(() => metodoSeleccionado = id);
+            await _continuarConMetodoSeleccionado();
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: seleccionado ? AppColors.primary : AppColors.divider,
+                width: seleccionado ? 1.5 : 1,
+              ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                texto,
-                style: TextStyle(
-                  color: seleccionado ? authPrimary : authIcon,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: seleccionado
+                        ? AppColors.primary.withValues(alpha: 0.15)
+                        : AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    _iconoMetodo(id),
+                    color: seleccionado
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                    size: 22,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        texto,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitulo,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (seleccionado)
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.primary,
+                  ),
+              ],
             ),
-            if (seleccionado)
-              const Icon(
-                Icons.check_circle_rounded,
-                color: Colors.green,
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -176,52 +173,71 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: authBackground,
-
       appBar: AppBar(
-        title: const Text("Confirmación"),
-        backgroundColor: authBackground,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Confirmar compra'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 10),
-                  Text(
-                    "${widget.cantidad} boleto${widget.cantidad == 1 ? '' : 's'}",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 24),
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.86),
-                      borderRadius: BorderRadius.circular(14),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.primary, AppColors.primaryDark],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Importe: \$${widget.total}",
-                          style: const TextStyle(
-                            color: authLabel,
+                          '${widget.cantidad} ${widget.cantidad == 1 ? "boleto" : "boletos"}',
+                          style: TextStyle(
                             fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.85),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Importe',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '\$${widget.total}',
+                              style: const TextStyle(
+                                fontSize: 26,
+                                color: AppColors.accent,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 4),
                         Text(
-                          "Saldo actual: \$$saldoActual",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
+                          'Saldo actual: \$$saldoActual',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.75),
                           ),
                         ),
                       ],
@@ -229,45 +245,45 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                   const SizedBox(height: 24),
                   const Text(
-                    "Selecciona método de pago",
+                    'Método de pago',
                     style: TextStyle(
-                      color: authLabel,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  metodoPago("tarjeta", "Tarjeta"),
-                  metodoPago("saldo", "Saldo"),
-                  metodoPago("otros", "Otros"),
+                  _metodoPago('tarjeta', 'Tarjeta', 'Crédito o débito'),
+                  _metodoPago('saldo', 'Saldo', 'Pagar con saldo disponible'),
+                  _metodoPago(
+                    'otros',
+                    'Otros',
+                    'Apple Pay, Google Pay, PayPal',
+                  ),
                   const Spacer(),
                   Row(
                     children: [
                       Expanded(
                         child: SizedBox(
                           height: 52,
-                          child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context, false);
-                          },
-                          style: paymentOutlinedButtonStyle(),
-                          child: const Text("Cancelar"),
-                        ),
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancelar'),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: SizedBox(
                           height: 52,
                           child: ElevatedButton(
                             onPressed: _continuarConMetodoSeleccionado,
-                            style: paymentPrimaryButtonStyle(),
-                            child: const Text("Continuar"),
+                            child: const Text('Continuar'),
                           ),
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
