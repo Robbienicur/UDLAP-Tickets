@@ -3,6 +3,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
 import '../tickets/confirmacion_screen.dart';
 import '../auth/login_screen.dart';
+// REMOVIBLE-PRUEBA: import de la pantalla de anuncios demo
+import '../ads/anuncios_screen.dart';
 import '../../theme/app_theme.dart';
 
 class Boleto {
@@ -111,6 +113,8 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         onComprarPrimero: () => setState(() => _selectedIndex = 0),
       ),
+      // REMOVIBLE-PRUEBA: tab de Anuncios (sección demo de AdMob)
+      const AnunciosScreen(),
       _PerfilPage(esInvitado: widget.esInvitado),
     ];
 
@@ -129,6 +133,12 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.confirmation_number_outlined),
             activeIcon: Icon(Icons.confirmation_number_rounded),
             label: 'Mis boletos',
+          ),
+          // REMOVIBLE-PRUEBA: item del bottom nav para Anuncios
+          BottomNavigationBarItem(
+            icon: Icon(Icons.campaign_outlined),
+            activeIcon: Icon(Icons.campaign_rounded),
+            label: 'Anuncios',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
