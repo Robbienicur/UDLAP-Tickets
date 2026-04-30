@@ -48,18 +48,106 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _buildPages() {
     return [
-      // Inicio
-      const Center(
-        child: Text(
-          'Inicio',
-          style: TextStyle(fontSize: 24),
-        ),
-      ),
-      // Mis Boletos
+      _buildInicioPage(),
       _buildBoletosPage(),
-      // Mi Perfil
       _buildPerfilPage(),
     ];
+  }
+
+  Widget _buildInicioPage() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Inicio',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Comprar Boletos',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 15),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                onPressed: () {
+                  if (_boletosComprar > 1) {
+                    setState(() {
+                      _boletosComprar--;
+                    });
+                  }
+                },
+                icon: const Icon(Icons.remove),
+              ),
+              Text(
+                '$_boletosComprar',
+                style: const TextStyle(fontSize: 20),
+              ),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _boletosComprar++;
+                  });
+                },
+                icon: const Icon(Icons.add),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ConfirmacionScreen(
+                      cantidadBoletos: _boletosComprar,
+                    ),
+                  ),
+                );
+
+                if (result == true) {
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  
+                  final success = await _apiService.comprarBoletos(_boletosComprar);
+                  
+                  if (success) {
+                    await _loadBoletos();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('¡Compra exitosa!')),
+                      );
+                    }
+                  } else {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Error al procesar la compra')),
+                      );
+                    }
+                  }
+                }
+              },
+              child: const Text('Comprar'),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildPerfilPage() {
@@ -302,83 +390,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
           ),
           const SizedBox(height: 15),
-          const Text(
-            'Comprar Boletos',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                onPressed: () {
-                  if (_boletosComprar > 1) {
-                    setState(() {
-                      _boletosComprar--;
-                    });
-                  }
-                },
-                icon: const Icon(Icons.remove),
-              ),
-              Text(
-                '$_boletosComprar',
-                style: const TextStyle(fontSize: 20),
-              ),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _boletosComprar++;
-                  });
-                },
-                icon: const Icon(Icons.add),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Center(
-            child: ElevatedButton(
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ConfirmacionScreen(
-                      cantidadBoletos: _boletosComprar,
-                    ),
-                  ),
-                );
-                
-                if (result == true) {
-                  setState(() {
-                    _isLoading = true;
-                  });
-                  
-                  final success = await _apiService.comprarBoletos(_boletosComprar);
-                  
-                  if (success) {
-                    await _loadBoletos();
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('¡Compra exitosa!')),
-                      );
-                    }
-                  } else {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Error al procesar la compra')),
-                      );
-                    }
-                  }
-                }
-              },
-              child: const Text('Comprar'),
-            ),
-          ),
         ],
       ),
     );
