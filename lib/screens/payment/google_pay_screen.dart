@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'payment_success_screen.dart';
 import '../../theme/app_theme.dart';
 
@@ -43,7 +45,7 @@ class _GooglePayScreenState extends State<GooglePayScreen> {
       appBar: AppBar(
         title: const Text('Pago con Google Pay'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -67,18 +69,18 @@ class _GooglePayScreenState extends State<GooglePayScreen> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.divider),
                     ),
-                    child: const Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.g_mobiledata_rounded,
-                              color: Color(0xFF4285F4),
-                              size: 32,
+                            PhosphorIcon(
+                              PhosphorIcons.googleLogo(PhosphorIconsStyle.bold),
+                              color: const Color(0xFF4285F4),
+                              size: 26,
                             ),
-                            SizedBox(width: 6),
-                            Text(
+                            const SizedBox(width: 8),
+                            const Text(
                               'Google Pay',
                               style: TextStyle(
                                 fontSize: 18,
@@ -111,7 +113,10 @@ class _GooglePayScreenState extends State<GooglePayScreen> {
                         child: SizedBox(
                           height: 52,
                           child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.pop(context);
+                            },
                             child: const Text('Cancelar'),
                           ),
                         ),
@@ -121,7 +126,12 @@ class _GooglePayScreenState extends State<GooglePayScreen> {
                         child: SizedBox(
                           height: 52,
                           child: ElevatedButton(
-                            onPressed: aceptado ? procesarPago : null,
+                            onPressed: aceptado
+                                ? () {
+                                    HapticFeedback.mediumImpact();
+                                    procesarPago();
+                                  }
+                                : null,
                             child: const Text('Continuar'),
                           ),
                         ),

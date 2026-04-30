@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'pago_tarjeta_screen.dart';
 import 'saldo_screen.dart';
 import 'recargar_saldo_screen.dart';
@@ -20,7 +23,7 @@ class ConfirmacionScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Confirmar compra'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -30,67 +33,21 @@ class ConfirmacionScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppColors.primary, AppColors.primaryDark],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Resumen',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '$cantidadBoletos ${cantidadBoletos == 1 ? "boleto" : "boletos"}',
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          '\$${total.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.accent,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              _ResumenCard(cantidad: cantidadBoletos, total: total)
+                  .animate()
+                  .fadeIn(duration: 400.ms)
+                  .slideY(begin: -0.05, end: 0),
               const SizedBox(height: 24),
-              const Text(
-                'Método de pago',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
+              Text('Método de pago', style: AppText.title())
+                  .animate(delay: 100.ms)
+                  .fadeIn(duration: 350.ms),
               const SizedBox(height: 12),
               _MetodoPagoTile(
-                icon: Icons.credit_card_outlined,
+                icon: PhosphorIcons.creditCard(),
                 titulo: 'Tarjeta',
                 subtitulo: 'Crédito o débito',
                 onTap: () async {
+                  HapticFeedback.selectionClick();
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -101,13 +58,17 @@ class ConfirmacionScreen extends StatelessWidget {
                     Navigator.pop(context, true);
                   }
                 },
-              ),
+              ).animate(delay: 150.ms).fadeIn(duration: 350.ms).slideX(
+                    begin: 0.05,
+                    end: 0,
+                  ),
               const SizedBox(height: 10),
               _MetodoPagoTile(
-                icon: Icons.account_balance_wallet_outlined,
+                icon: PhosphorIcons.wallet(),
                 titulo: 'Saldo',
                 subtitulo: 'Pagar con saldo disponible',
                 onTap: () async {
+                  HapticFeedback.selectionClick();
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -120,13 +81,17 @@ class ConfirmacionScreen extends StatelessWidget {
                     Navigator.pop(context, true);
                   }
                 },
-              ),
+              ).animate(delay: 200.ms).fadeIn(duration: 350.ms).slideX(
+                    begin: 0.05,
+                    end: 0,
+                  ),
               const SizedBox(height: 10),
               _MetodoPagoTile(
-                icon: Icons.more_horiz_rounded,
+                icon: PhosphorIcons.dotsThree(PhosphorIconsStyle.bold),
                 titulo: 'Otros métodos',
                 subtitulo: 'Apple Pay, Google Pay, PayPal',
                 onTap: () async {
+                  HapticFeedback.selectionClick();
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -140,12 +105,16 @@ class ConfirmacionScreen extends StatelessWidget {
                     Navigator.pop(context, true);
                   }
                 },
-              ),
+              ).animate(delay: 250.ms).fadeIn(duration: 350.ms).slideX(
+                    begin: 0.05,
+                    end: 0,
+                  ),
               const Spacer(),
               SizedBox(
                 height: 48,
                 child: OutlinedButton.icon(
                   onPressed: () {
+                    HapticFeedback.selectionClick();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -153,13 +122,70 @@ class ConfirmacionScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.add_card_outlined, size: 18),
+                  icon: PhosphorIcon(
+                    PhosphorIcons.plusCircle(PhosphorIconsStyle.bold),
+                    size: 18,
+                  ),
                   label: const Text('Recargar saldo'),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ResumenCard extends StatelessWidget {
+  final int cantidad;
+  final double total;
+
+  const _ResumenCard({required this.cantidad, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Resumen',
+            style: AppText.label(
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$cantidad ${cantidad == 1 ? "boleto" : "boletos"}',
+                style: AppText.h2(color: Colors.white),
+              ),
+              Text(
+                '\$${total.toStringAsFixed(2)}',
+                style: AppText.priceLarge(color: AppColors.accent),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -201,34 +227,21 @@ class _MetodoPagoTile extends StatelessWidget {
                   color: AppColors.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 22),
+                child: PhosphorIcon(icon, color: AppColors.primary, size: 22),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      titulo,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
+                    Text(titulo, style: AppText.title()),
                     const SizedBox(height: 2),
-                    Text(
-                      subtitulo,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
+                    Text(subtitulo, style: AppText.caption()),
                   ],
                 ),
               ),
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
+              PhosphorIcon(
+                PhosphorIcons.caretRight(),
                 size: 14,
                 color: AppColors.textMuted,
               ),

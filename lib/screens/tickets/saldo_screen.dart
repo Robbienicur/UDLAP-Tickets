@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'recargar_saldo_screen.dart';
 import '../../theme/app_theme.dart';
 
@@ -19,7 +21,7 @@ class SaldoScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Pagar con saldo'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -44,8 +46,8 @@ class SaldoScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(
-                          Icons.account_balance_wallet_outlined,
+                        PhosphorIcon(
+                          PhosphorIcons.wallet(),
                           color: Colors.white,
                           size: 22,
                         ),
@@ -110,7 +112,10 @@ class SaldoScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.add_card_outlined, size: 18),
+                  icon: PhosphorIcon(
+                    PhosphorIcons.plusCircle(PhosphorIconsStyle.bold),
+                    size: 18,
+                  ),
                   label: const Text('Recargar saldo'),
                 ),
               ),
@@ -121,7 +126,10 @@ class SaldoScreen extends StatelessWidget {
                     child: SizedBox(
                       height: 52,
                       child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.pop(context);
+                        },
                         child: const Text('Cancelar'),
                       ),
                     ),
@@ -132,7 +140,10 @@ class SaldoScreen extends StatelessWidget {
                       height: 52,
                       child: ElevatedButton(
                         onPressed: suficiente
-                            ? () => Navigator.pop(context, true)
+                            ? () {
+                                HapticFeedback.mediumImpact();
+                                Navigator.pop(context, true);
+                              }
                             : null,
                         child: const Text('Pagar'),
                       ),

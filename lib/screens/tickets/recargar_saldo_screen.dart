@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../theme/app_theme.dart';
 
 class RecargarSaldoScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class RecargarSaldoScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Recargar saldo'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -72,15 +73,15 @@ class RecargarSaldoScreen extends StatelessWidget {
                   color: AppColors.accentContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
+                    PhosphorIcon(
+                      PhosphorIcons.info(),
                       color: AppColors.accentDark,
                       size: 20,
                     ),
-                    SizedBox(width: 10),
-                    Expanded(
+                    const SizedBox(width: 10),
+                    const Expanded(
                       child: Text(
                         'El saldo se acreditará después de pagar en caja',
                         style: TextStyle(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../theme/app_theme.dart';
 
 class PagoTarjetaScreen extends StatefulWidget {
@@ -29,7 +31,7 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
       appBar: AppBar(
         title: const Text('Pago con tarjeta'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -66,8 +68,8 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
                             letterSpacing: 1.5,
                           ),
                         ),
-                        const Icon(
-                          Icons.contactless_outlined,
+                        PhosphorIcon(
+                          PhosphorIcons.wifiHigh(),
                           color: Colors.white,
                           size: 24,
                         ),
@@ -116,9 +118,9 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
               TextField(
                 controller: _nombreController,
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Nombre del titular',
-                  prefixIcon: Icon(Icons.person_outline),
+                  prefixIcon: PhosphorIcon(PhosphorIcons.user()),
                 ),
               ),
               const SizedBox(height: 14),
@@ -126,10 +128,10 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
                 controller: _numeroController,
                 keyboardType: TextInputType.number,
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Número de tarjeta',
                   hintText: '1234 5678 9012 3456',
-                  prefixIcon: Icon(Icons.credit_card),
+                  prefixIcon: PhosphorIcon(PhosphorIcons.creditCard()),
                 ),
               ),
               const SizedBox(height: 14),
@@ -140,9 +142,9 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
                       controller: _fechaController,
                       keyboardType: TextInputType.datetime,
                       onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'MM/AA',
-                        prefixIcon: Icon(Icons.calendar_today_outlined),
+                        prefixIcon: PhosphorIcon(PhosphorIcons.calendar()),
                       ),
                     ),
                   ),
@@ -152,9 +154,9 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
                       controller: _cvvController,
                       keyboardType: TextInputType.number,
                       obscureText: true,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'CVV',
-                        prefixIcon: Icon(Icons.lock_outline),
+                        prefixIcon: PhosphorIcon(PhosphorIcons.lock()),
                       ),
                     ),
                   ),
@@ -167,7 +169,10 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
                     child: SizedBox(
                       height: 52,
                       child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.pop(context);
+                        },
                         child: const Text('Cancelar'),
                       ),
                     ),
@@ -177,7 +182,10 @@ class _PagoTarjetaScreenState extends State<PagoTarjetaScreen> {
                     child: SizedBox(
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context, true),
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          Navigator.pop(context, true);
+                        },
                         child: const Text('Pagar'),
                       ),
                     ),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'registro_screen.dart';
 import '../home/home_screen.dart';
 import 'recuperar_contraseña.dart';
@@ -24,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _iniciarSesion() {
+    HapticFeedback.mediumImpact();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -31,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _irARegistro() {
+    HapticFeedback.selectionClick();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const RegistroScreen()),
@@ -38,10 +43,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _entrarComoInvitado() {
+    HapticFeedback.lightImpact();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => const HomeScreen(esInvitado: true)),
+        builder: (context) => const HomeScreen(esInvitado: true),
+      ),
     );
   }
 
@@ -54,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               Center(
                 child: Container(
                   width: 110,
@@ -64,8 +71,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.primary.withValues(alpha: 0.18),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
+                        blurRadius: 28,
+                        offset: const Offset(0, 12),
                       ),
                     ],
                   ),
@@ -77,55 +84,62 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-              ),
+              )
+                  .animate()
+                  .fadeIn(duration: 500.ms)
+                  .scale(
+                    begin: const Offset(0.85, 0.85),
+                    end: const Offset(1, 1),
+                  ),
               const SizedBox(height: 28),
-              const Text(
+              Text(
                 'UDLAP Tickets',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
-                  letterSpacing: -0.5,
-                ),
-              ),
+                style: AppText.h1(color: AppColors.primary),
+              )
+                  .animate(delay: 100.ms)
+                  .fadeIn(duration: 400.ms)
+                  .slideY(begin: 0.1, end: 0),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Tu acceso digital al estacionamiento',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+                style: AppText.body(color: AppColors.textSecondary),
+              ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
               const SizedBox(height: 40),
-              TextField(
-                controller: _correoController,
-                decoration: const InputDecoration(
-                  labelText: 'Correo institucional',
-                  hintText: 'estudiante@udlap.mx',
-                  prefixIcon: Icon(Icons.email_outlined),
+              _AnimatedField(
+                delay: 200.ms,
+                child: TextField(
+                  controller: _correoController,
+                  decoration: InputDecoration(
+                    labelText: 'Correo institucional',
+                    hintText: 'estudiante@udlap.mx',
+                    prefixIcon: PhosphorIcon(PhosphorIcons.envelope()),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
                 ),
-                keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: _contrasenaController,
-                obscureText: !_mostrarContrasena,
-                decoration: InputDecoration(
-                  labelText: 'Contraseña',
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _mostrarContrasena
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
+              _AnimatedField(
+                delay: 250.ms,
+                child: TextField(
+                  controller: _contrasenaController,
+                  obscureText: !_mostrarContrasena,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    prefixIcon: PhosphorIcon(PhosphorIcons.lock()),
+                    suffixIcon: IconButton(
+                      icon: PhosphorIcon(
+                        _mostrarContrasena
+                            ? PhosphorIcons.eyeSlash()
+                            : PhosphorIcons.eye(),
+                      ),
+                      onPressed: () {
+                        setState(
+                          () => _mostrarContrasena = !_mostrarContrasena,
+                        );
+                      },
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _mostrarContrasena = !_mostrarContrasena;
-                      });
-                    },
                   ),
                 ),
               ),
@@ -134,11 +148,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
+                    HapticFeedback.selectionClick();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            const RecuperarContrasenaScreen(),
+                        builder: (context) => const RecuperarContrasenaScreen(),
                       ),
                     );
                   },
@@ -152,7 +166,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _iniciarSesion,
                   child: const Text('Iniciar sesión'),
                 ),
-              ),
+              ).animate(delay: 350.ms).fadeIn(duration: 400.ms).slideY(
+                    begin: 0.15,
+                    end: 0,
+                  ),
               const SizedBox(height: 14),
               SizedBox(
                 height: 52,
@@ -160,25 +177,40 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _entrarComoInvitado,
                   child: const Text('Continuar como invitado'),
                 ),
-              ),
+              ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     '¿No tienes cuenta?',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: AppText.body(color: AppColors.textSecondary),
                   ),
                   TextButton(
                     onPressed: _irARegistro,
                     child: const Text('Regístrate'),
                   ),
                 ],
-              ),
+              ).animate(delay: 450.ms).fadeIn(duration: 400.ms),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+class _AnimatedField extends StatelessWidget {
+  final Widget child;
+  final Duration delay;
+
+  const _AnimatedField({required this.child, required this.delay});
+
+  @override
+  Widget build(BuildContext context) {
+    return child
+        .animate(delay: delay)
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: 0.1, end: 0);
   }
 }

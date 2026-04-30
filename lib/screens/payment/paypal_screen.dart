@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'payment_success_screen.dart';
 import '../../theme/app_theme.dart';
 
@@ -43,7 +45,7 @@ class _PaypalScreenState extends State<PaypalScreen> {
       appBar: AppBar(
         title: const Text('Pago con PayPal'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -67,18 +69,18 @@ class _PaypalScreenState extends State<PaypalScreen> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.divider),
                     ),
-                    child: const Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              Icons.paypal,
-                              color: Color(0xFF003087),
+                            PhosphorIcon(
+                              PhosphorIcons.paypalLogo(PhosphorIconsStyle.bold),
+                              color: const Color(0xFF003087),
                               size: 28,
                             ),
-                            SizedBox(width: 10),
-                            Text(
+                            const SizedBox(width: 10),
+                            const Text(
                               'PayPal',
                               style: TextStyle(
                                 fontSize: 18,
@@ -111,7 +113,10 @@ class _PaypalScreenState extends State<PaypalScreen> {
                         child: SizedBox(
                           height: 52,
                           child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.pop(context);
+                            },
                             child: const Text('Cancelar'),
                           ),
                         ),
@@ -121,7 +126,12 @@ class _PaypalScreenState extends State<PaypalScreen> {
                         child: SizedBox(
                           height: 52,
                           child: ElevatedButton(
-                            onPressed: aceptado ? procesarPago : null,
+                            onPressed: aceptado
+                                ? () {
+                                    HapticFeedback.mediumImpact();
+                                    procesarPago();
+                                  }
+                                : null,
                             child: const Text('Continuar'),
                           ),
                         ),

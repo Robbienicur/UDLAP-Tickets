@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shimmer/shimmer.dart';
 import '../tickets/confirmacion_screen.dart';
 import '../auth/login_screen.dart';
 import '../../theme/app_theme.dart';
@@ -52,17 +56,18 @@ class _HomeScreenState extends State<HomeScreen> {
       _misBoletos.where((b) => b.estado == 'Disponible').length;
 
   Future<void> _confirmarCompra() async {
+    HapticFeedback.lightImpact();
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ConfirmacionScreen(
-          cantidadBoletos: _boletosComprar,
-        ),
+        builder: (context) =>
+            ConfirmacionScreen(cantidadBoletos: _boletosComprar),
       ),
     );
 
     if (!mounted) return;
     if (result == true) {
+      HapticFeedback.mediumImpact();
       setState(() {
         for (int i = 0; i < _boletosComprar; i++) {
           final now = DateTime.now();
@@ -70,11 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'BOL-${now.millisecondsSinceEpoch.toString().substring(7)}-$i';
           _misBoletos.insert(
             0,
-            Boleto(
-              id: id,
-              codigoAlfanumerico: id,
-              fechaCompra: now,
-            ),
+            Boleto(id: id, codigoAlfanumerico: id, fechaCompra: now),
           );
         }
       });
@@ -91,9 +92,13 @@ class _HomeScreenState extends State<HomeScreen> {
         cantidad: _boletosComprar,
         precioBoleto: _precioBoleto,
         boletosDisponibles: _cantidadDisponibles,
-        onIncrement: () => setState(() => _boletosComprar++),
+        onIncrement: () {
+          HapticFeedback.selectionClick();
+          setState(() => _boletosComprar++);
+        },
         onDecrement: () {
           if (_boletosComprar > 1) {
+            HapticFeedback.selectionClick();
             setState(() => _boletosComprar--);
           }
         },
@@ -105,9 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading: _isLoading,
         onRefresh: _loadBoletos,
         onMarcarUsado: (boleto) {
-          setState(() {
-            boleto.estado = 'Usado';
-          });
+          HapticFeedback.lightImpact();
+          setState(() => boleto.estado = 'Usado');
         },
         onComprarPrimero: () => setState(() => _selectedIndex = 0),
       ),
@@ -118,21 +122,26 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(child: pages[_selectedIndex]),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        items: const [
+        onTap: (index) {
+          HapticFeedback.selectionClick();
+          setState(() => _selectedIndex = index);
+        },
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_rounded),
+            icon: PhosphorIcon(PhosphorIcons.house()),
+            activeIcon: PhosphorIcon(PhosphorIcons.house(PhosphorIconsStyle.fill)),
             label: 'Inicio',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.confirmation_number_outlined),
-            activeIcon: Icon(Icons.confirmation_number_rounded),
+            icon: PhosphorIcon(PhosphorIcons.ticket()),
+            activeIcon:
+                PhosphorIcon(PhosphorIcons.ticket(PhosphorIconsStyle.fill)),
             label: 'Mis boletos',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person_rounded),
+            icon: PhosphorIcon(PhosphorIcons.user()),
+            activeIcon:
+                PhosphorIcon(PhosphorIcons.user(PhosphorIconsStyle.fill)),
             label: 'Mi perfil',
           ),
         ],
@@ -186,51 +195,37 @@ class _InicioPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'UDLAP Tickets',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
-                      ),
+                      style: AppText.h3(color: AppColors.primary),
                     ),
                     Text(
                       'Hola, bienvenido',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
+                      style: AppText.caption(),
                     ),
                   ],
                 ),
               ),
             ],
-          ),
+          ).animate().fadeIn(duration: 350.ms).slideY(begin: -0.1, end: 0),
           const SizedBox(height: 20),
           _ResumenCard(
             disponibles: boletosDisponibles,
             onVerBoletos: onIrAMisBoletos,
-          ),
+          ).animate(delay: 100.ms).fadeIn(duration: 400.ms).slideY(
+                begin: 0.1,
+                end: 0,
+              ),
           const SizedBox(height: 24),
-          const Text(
-            'Comprar boletos',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('Comprar boletos', style: AppText.h2()),
           const SizedBox(height: 6),
           Text(
             '\$${precioBoleto.toStringAsFixed(0)} MXN por boleto',
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: AppText.body(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           Container(
@@ -242,20 +237,13 @@ class _InicioPage extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const Text(
-                  'Cantidad',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text('Cantidad', style: AppText.label()),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _CounterButton(
-                      icon: Icons.remove,
+                      icon: PhosphorIcons.minus(PhosphorIconsStyle.bold),
                       onPressed: cantidad > 1 ? onDecrement : null,
                     ),
                     SizedBox(
@@ -263,15 +251,11 @@ class _InicioPage extends StatelessWidget {
                       child: Text(
                         '$cantidad',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                        ),
+                        style: AppText.priceLarge(color: AppColors.primary),
                       ),
                     ),
                     _CounterButton(
-                      icon: Icons.add,
+                      icon: PhosphorIcons.plus(PhosphorIconsStyle.bold),
                       onPressed: onIncrement,
                     ),
                   ],
@@ -282,21 +266,10 @@ class _InicioPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Total',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    Text('Total', style: AppText.label()),
                     Text(
                       '\$${total.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.accentDark,
-                      ),
+                      style: AppText.priceMedium(),
                     ),
                   ],
                 ),
@@ -306,13 +279,19 @@ class _InicioPage extends StatelessWidget {
                   height: 52,
                   child: ElevatedButton.icon(
                     onPressed: onComprar,
-                    icon: const Icon(Icons.shopping_cart_outlined, size: 20),
+                    icon: PhosphorIcon(
+                      PhosphorIcons.shoppingCart(PhosphorIconsStyle.bold),
+                      size: 18,
+                    ),
                     label: const Text('Comprar'),
                   ),
                 ),
               ],
             ),
-          ),
+          ).animate(delay: 200.ms).fadeIn(duration: 400.ms).slideY(
+                begin: 0.1,
+                end: 0,
+              ),
         ],
       ),
     );
@@ -337,10 +316,10 @@ class _CounterButton extends StatelessWidget {
         child: SizedBox(
           width: 48,
           height: 48,
-          child: Icon(
+          child: PhosphorIcon(
             icon,
             color: enabled ? AppColors.primary : AppColors.textMuted,
-            size: 24,
+            size: 22,
           ),
         ),
       ),
@@ -368,6 +347,13 @@ class _ResumenCard extends StatelessWidget {
           colors: [AppColors.primary, AppColors.primaryDark],
         ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -378,8 +364,8 @@ class _ResumenCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(
-              Icons.confirmation_number_rounded,
+            child: PhosphorIcon(
+              PhosphorIcons.ticket(PhosphorIconsStyle.fill),
               color: Colors.white,
               size: 28,
             ),
@@ -391,18 +377,13 @@ class _ResumenCard extends StatelessWidget {
               children: [
                 Text(
                   '$disponibles ${disponibles == 1 ? "boleto" : "boletos"}',
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
+                  style: AppText.h2(color: Colors.white),
                 ),
                 Text(
                   disponibles == 0
                       ? 'No tienes boletos disponibles'
                       : 'Disponibles para usar',
-                  style: TextStyle(
-                    fontSize: 13,
+                  style: AppText.caption(
                     color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ),
@@ -411,7 +392,10 @@ class _ResumenCard extends StatelessWidget {
           ),
           IconButton(
             onPressed: onVerBoletos,
-            icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+            icon: PhosphorIcon(
+              PhosphorIcons.arrowRight(PhosphorIconsStyle.bold),
+              color: Colors.white,
+            ),
             style: IconButton.styleFrom(
               backgroundColor: Colors.white.withValues(alpha: 0.15),
             ),
@@ -448,20 +432,16 @@ class _MisBoletosPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text(
-                  'Mis boletos',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
+              Expanded(child: Text('Mis boletos', style: AppText.h1())),
               if (!isLoading)
                 IconButton(
-                  onPressed: onRefresh,
-                  icon: const Icon(Icons.refresh_rounded),
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    onRefresh();
+                  },
+                  icon: PhosphorIcon(
+                    PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.bold),
+                  ),
                   color: AppColors.primary,
                 ),
             ],
@@ -472,46 +452,60 @@ class _MisBoletosPage extends StatelessWidget {
               disponibles == 0
                   ? 'Sin boletos disponibles'
                   : 'Tienes $disponibles ${disponibles == 1 ? "boleto disponible" : "boletos disponibles"}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
+              style: AppText.body(color: AppColors.textSecondary),
             ),
           ],
           const SizedBox(height: 18),
           Expanded(
             child: isLoading
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(color: AppColors.primary),
-                        SizedBox(height: 14),
-                        Text(
-                          'Cargando boletos…',
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                  )
+                ? const _BoletosSkeleton()
                 : boletos.isEmpty
                     ? _EmptyState(onComprar: onComprarPrimero)
                     : ListView.separated(
                         padding: const EdgeInsets.only(bottom: 20),
                         itemCount: boletos.length,
                         separatorBuilder: (_, __) =>
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 14),
                         itemBuilder: (context, index) {
-                          return _BoletoCard(
+                          return _PerforatedTicket(
                             boleto: boletos[index],
                             onMarcarUsado: () =>
                                 onMarcarUsado(boletos[index]),
-                          );
+                          )
+                              .animate(delay: (index * 60).ms)
+                              .fadeIn(duration: 350.ms)
+                              .slideY(begin: 0.08, end: 0);
                         },
                       ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BoletosSkeleton extends StatelessWidget {
+  const _BoletosSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: const EdgeInsets.only(bottom: 20),
+      itemCount: 3,
+      separatorBuilder: (_, __) => const SizedBox(height: 14),
+      itemBuilder: (context, _) {
+        return Shimmer.fromColors(
+          baseColor: AppColors.surfaceVariant,
+          highlightColor: AppColors.surface,
+          child: Container(
+            height: 120,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -528,39 +522,38 @@ class _EmptyState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 88,
-            height: 88,
+            width: 96,
+            height: 96,
             decoration: const BoxDecoration(
               color: AppColors.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.confirmation_number_outlined,
+            child: PhosphorIcon(
+              PhosphorIcons.ticket(),
               size: 44,
               color: AppColors.primary,
             ),
-          ),
+          ).animate().fadeIn(duration: 400.ms).scale(
+                begin: const Offset(0.8, 0.8),
+                end: const Offset(1, 1),
+              ),
           const SizedBox(height: 18),
-          const Text(
-            'No tienes boletos',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('No tienes boletos', style: AppText.h3()),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Compra tu primer boleto para empezar',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: AppText.body(color: AppColors.textSecondary),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           OutlinedButton.icon(
-            onPressed: onComprar,
-            icon: const Icon(Icons.add, size: 18),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              onComprar();
+            },
+            icon: PhosphorIcon(
+              PhosphorIcons.plus(PhosphorIconsStyle.bold),
+              size: 16,
+            ),
             label: const Text('Comprar boletos'),
           ),
         ],
@@ -569,11 +562,14 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _BoletoCard extends StatelessWidget {
+class _PerforatedTicket extends StatelessWidget {
   final Boleto boleto;
   final VoidCallback onMarcarUsado;
 
-  const _BoletoCard({required this.boleto, required this.onMarcarUsado});
+  const _PerforatedTicket({
+    required this.boleto,
+    required this.onMarcarUsado,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -581,71 +577,196 @@ class _BoletoCard extends StatelessWidget {
     final dateStr =
         DateFormat('dd/MM/yyyy · HH:mm').format(boleto.fechaCompra);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.divider),
-              ),
-              child: QrImageView(
-                data: boleto.codigoAlfanumerico,
-                version: QrVersions.auto,
-                size: 76,
-              ),
+    return ClipPath(
+      clipper: _TicketClipper(notchRadius: 12, notchOffset: 110),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.textPrimary.withValues(alpha: 0.04),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    boleto.codigoAlfanumerico,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    dateStr,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _EstadoChip(
-                    estado: boleto.estado,
-                    isDisponible: isDisponible,
-                  ),
-                ],
-              ),
-            ),
-            if (isDisponible)
-              IconButton(
-                onPressed: onMarcarUsado,
-                icon: const Icon(Icons.check_circle_outline),
-                color: AppColors.primary,
-                tooltip: 'Marcar como usado',
-              ),
           ],
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Container(
+                width: 110,
+                color: AppColors.primaryContainer,
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: QrImageView(
+                        data: boleto.codigoAlfanumerico,
+                        version: QrVersions.auto,
+                        size: 72,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'BOLETO',
+                      style: AppText.caption(color: AppColors.primary)
+                          .copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              CustomPaint(
+                size: const Size(2, double.infinity),
+                painter: _DashedLinePainter(),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        boleto.codigoAlfanumerico,
+                        style: AppText.mono(size: 13),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          PhosphorIcon(
+                            PhosphorIcons.calendar(),
+                            size: 13,
+                            color: AppColors.textMuted,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              dateStr,
+                              style: AppText.caption(),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _EstadoChip(
+                            estado: boleto.estado,
+                            isDisponible: isDisponible,
+                          ),
+                          const Spacer(),
+                          if (isDisponible)
+                            IconButton(
+                              onPressed: onMarcarUsado,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              icon: PhosphorIcon(
+                                PhosphorIcons.checkCircle(
+                                  PhosphorIconsStyle.fill,
+                                ),
+                                color: AppColors.primary,
+                                size: 24,
+                              ),
+                              tooltip: 'Marcar como usado',
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _TicketClipper extends CustomClipper<Path> {
+  final double notchRadius;
+  final double notchOffset;
+
+  _TicketClipper({required this.notchRadius, required this.notchOffset});
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    const r = 16.0;
+    final cx = notchOffset;
+    final cyTop = 0.0;
+    final cyBottom = size.height;
+
+    path.moveTo(r, 0);
+    path.lineTo(cx - notchRadius, 0);
+    path.arcToPoint(
+      Offset(cx + notchRadius, 0),
+      radius: Radius.circular(notchRadius),
+      clockwise: false,
+    );
+    path.lineTo(size.width - r, 0);
+    path.arcToPoint(
+      Offset(size.width, r),
+      radius: const Radius.circular(r),
+    );
+    path.lineTo(size.width, size.height - r);
+    path.arcToPoint(
+      Offset(size.width - r, size.height),
+      radius: const Radius.circular(r),
+    );
+    path.lineTo(cx + notchRadius, size.height);
+    path.arcToPoint(
+      Offset(cx - notchRadius, size.height),
+      radius: Radius.circular(notchRadius),
+      clockwise: false,
+    );
+    path.lineTo(r, size.height);
+    path.arcToPoint(
+      Offset(0, size.height - r),
+      radius: const Radius.circular(r),
+    );
+    path.lineTo(0, r);
+    path.arcToPoint(Offset(r, 0), radius: const Radius.circular(r));
+    path.close();
+
+    // suppress unused-field warning when zero
+    if (cyTop > 0 || cyBottom < 0) path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.divider
+      ..strokeWidth = 1.5;
+    const dashHeight = 4.0;
+    const dashSpace = 4.0;
+    double y = 14;
+    while (y < size.height - 14) {
+      canvas.drawLine(Offset(0, y), Offset(0, y + dashHeight), paint);
+      y += dashHeight + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _EstadoChip extends StatelessWidget {
@@ -672,18 +793,14 @@ class _EstadoChip extends StatelessWidget {
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: fg,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: fg, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
           Text(
             estado,
-            style: TextStyle(
-              color: fg,
-              fontSize: 11,
+            style: AppText.caption(color: fg).copyWith(
               fontWeight: FontWeight.w700,
+              fontSize: 11,
             ),
           ),
         ],
@@ -704,14 +821,7 @@ class _PerfilPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Mi perfil',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('Mi perfil', style: AppText.h1()),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(18),
@@ -729,10 +839,10 @@ class _PerfilPage extends StatelessWidget {
                     color: AppColors.primaryContainer,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.person_rounded,
+                  child: PhosphorIcon(
+                    PhosphorIcons.user(PhosphorIconsStyle.fill),
                     color: AppColors.primary,
-                    size: 32,
+                    size: 28,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -742,29 +852,22 @@ class _PerfilPage extends StatelessWidget {
                     children: [
                       Text(
                         esInvitado ? 'Invitado' : 'Estudiante UDLAP',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
+                        style: AppText.title(),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         esInvitado ? 'Sesión de invitado' : 'correo@udlap.mx',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppText.caption(),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-          ),
+          ).animate().fadeIn(duration: 350.ms).slideY(begin: 0.05, end: 0),
           const SizedBox(height: 18),
           _PerfilTile(
-            icon: Icons.description_outlined,
+            icon: PhosphorIcons.fileText(),
             title: 'Términos y condiciones',
             onTap: () => _mostrarDialogo(
               context,
@@ -774,7 +877,7 @@ class _PerfilPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _PerfilTile(
-            icon: Icons.help_outline,
+            icon: PhosphorIcons.question(),
             title: 'Ayuda',
             onTap: () => _mostrarDialogo(
               context,
@@ -787,6 +890,7 @@ class _PerfilPage extends StatelessWidget {
             height: 52,
             child: OutlinedButton.icon(
               onPressed: () {
+                HapticFeedback.mediumImpact();
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -794,7 +898,10 @@ class _PerfilPage extends StatelessWidget {
                   ),
                 );
               },
-              icon: const Icon(Icons.logout, size: 18),
+              icon: PhosphorIcon(
+                PhosphorIcons.signOut(PhosphorIconsStyle.bold),
+                size: 18,
+              ),
               label: const Text('Cerrar sesión'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.error,
@@ -842,7 +949,10 @@ class _PerfilTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
@@ -858,21 +968,16 @@ class _PerfilTile extends StatelessWidget {
                   color: AppColors.primaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                child: PhosphorIcon(
+                  icon,
+                  color: AppColors.primary,
+                  size: 18,
                 ),
               ),
-              const Icon(
-                Icons.arrow_forward_ios,
+              const SizedBox(width: 12),
+              Expanded(child: Text(title, style: AppText.title())),
+              PhosphorIcon(
+                PhosphorIcons.caretRight(),
                 size: 14,
                 color: AppColors.textMuted,
               ),

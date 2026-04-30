@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'google_pay_screen.dart';
 import 'paypal_screen.dart';
 import 'apple_pay_screen.dart';
@@ -28,6 +30,7 @@ class PaymentOtherMethodsScreen extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () async {
+          HapticFeedback.selectionClick();
           final bool? resultado = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => pantallaDestino),
@@ -51,7 +54,7 @@ class PaymentOtherMethodsScreen extends StatelessWidget {
                   color: iconColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: iconColor, size: 24),
+                child: PhosphorIcon(icon, color: iconColor, size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -77,8 +80,8 @@ class PaymentOtherMethodsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
+              PhosphorIcon(
+                PhosphorIcons.caretRight(),
                 size: 14,
                 color: AppColors.textMuted,
               ),
@@ -95,7 +98,7 @@ class PaymentOtherMethodsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Otros métodos de pago'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -109,7 +112,7 @@ class PaymentOtherMethodsScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _metodoBoton(
                 context: context,
-                icon: Icons.g_mobiledata_rounded,
+                icon: PhosphorIcons.googleLogo(PhosphorIconsStyle.bold),
                 iconColor: const Color(0xFF4285F4),
                 titulo: 'Google Pay',
                 subtitulo: 'Paga con tu cuenta de Google',
@@ -121,7 +124,7 @@ class PaymentOtherMethodsScreen extends StatelessWidget {
               const SizedBox(height: 10),
               _metodoBoton(
                 context: context,
-                icon: Icons.apple_rounded,
+                icon: PhosphorIcons.appleLogo(PhosphorIconsStyle.fill),
                 iconColor: AppColors.textPrimary,
                 titulo: 'Apple Pay',
                 subtitulo: 'Paga con Apple Pay',
@@ -133,7 +136,7 @@ class PaymentOtherMethodsScreen extends StatelessWidget {
               const SizedBox(height: 10),
               _metodoBoton(
                 context: context,
-                icon: Icons.paypal,
+                icon: PhosphorIcons.paypalLogo(PhosphorIconsStyle.bold),
                 iconColor: const Color(0xFF003087),
                 titulo: 'PayPal',
                 subtitulo: 'Paga con tu cuenta PayPal',
@@ -146,7 +149,10 @@ class PaymentOtherMethodsScreen extends StatelessWidget {
               SizedBox(
                 height: 52,
                 child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    Navigator.pop(context);
+                  },
                   child: const Text('Cancelar'),
                 ),
               ),

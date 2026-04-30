@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../theme/app_theme.dart';
 
 class RecuperarContrasenaScreen extends StatefulWidget {
@@ -182,7 +183,7 @@ class _RecuperarContrasenaScreenState
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -219,10 +220,10 @@ class _RecuperarContrasenaScreenState
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
                   hintText: 'estudiante@udlap.mx',
-                  prefixIcon: const Icon(Icons.email_outlined),
+                  prefixIcon: PhosphorIcon(PhosphorIcons.envelope()),
                   suffixIcon: _correoController.text.trim().isNotEmpty
-                      ? const Icon(
-                          Icons.check_circle,
+                      ? PhosphorIcon(
+                          PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
                           color: AppColors.success,
                         )
                       : null,
@@ -234,7 +235,10 @@ class _RecuperarContrasenaScreenState
                 height: 48,
                 child: OutlinedButton.icon(
                   onPressed: _enviarCodigo,
-                  icon: const Icon(Icons.send_outlined, size: 18),
+                  icon: PhosphorIcon(
+                    PhosphorIcons.paperPlaneTilt(PhosphorIconsStyle.bold),
+                    size: 18,
+                  ),
                   label: const Text('Enviar código'),
                 ),
               ),
@@ -403,7 +407,7 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
