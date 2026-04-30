@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'registro_screen.dart';
 import '../home/home_screen.dart';
 import 'recuperar_contraseña.dart';
+import '../../services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +14,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _correoController = TextEditingController();
   final _contrasenaController = TextEditingController();
+  final _apiService = ApiService();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -21,12 +24,30 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _iniciarSesion() {
-    // Por ahora solo navega al home
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+  Future<void> _iniciarSesion() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final success = await _apiService.login(
+      _correoController.text,
+      _contrasenaController.text,
     );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error de inicio de sesión. Verifique sus credenciales.')),
+      );
+    }
   }
 
   void _irARegistro() {
@@ -89,7 +110,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
-                    child: const Text('Iniciar Sesión'),
+                    child: _isLoading 
+                        ? const CircularProgressIndicator(color: Colors.white) 
+                        : const Text('Iniciar Sesión'),
                   ),
                 ),
                 const SizedBox(height: 20),

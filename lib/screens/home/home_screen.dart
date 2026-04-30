@@ -4,19 +4,8 @@ import 'package:intl/intl.dart';
 import '../tickets/confirmacion_screen.dart';
 import '../auth/login_screen.dart';
 
-class Boleto {
-  final String id;
-  final String codigoAlfanumerico;
-  final DateTime fechaCompra;
-  String estado;
-
-  Boleto({
-    required this.id,
-    required this.codigoAlfanumerico,
-    required this.fechaCompra,
-    this.estado = 'Disponible',
-  });
-}
+import '../../models/boleto.dart';
+import '../../services/api_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool esInvitado;
@@ -32,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Boleto> _misBoletos = [];
   int _boletosComprar = 1;
   bool _isLoading = false;
+  final _apiService = ApiService();
 
   @override
   void initState() {
@@ -43,9 +33,12 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isLoading = true;
     });
-    // Simular carga de máximo 2 segundos como indica el criterio
-    await Future.delayed(const Duration(seconds: 1));
+    
+    final boletos = await _apiService.getBoletos();
+    
     setState(() {
+      _misBoletos.clear();
+      _misBoletos.addAll(boletos);
       _isLoading = false;
     });
   }
@@ -140,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
+                _apiService.logout();
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -358,20 +352,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 
                 if (result == true) {
                   setState(() {
-                    for (int i = 0; i < _boletosComprar; i++) {
-                      final now = DateTime.now();
-                      final id = 'BOL-${now.millisecondsSinceEpoch.toString().substring(7)}-$i';
-                      _misBoletos.insert(0, Boleto(
-                        id: id,
-                        codigoAlfanumerico: id,
-                        fechaCompra: now,
-                      ));
-                    }
+                    _isLoading = true;
                   });
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('¡Compra exitosa!')),
-                    );
+                  
+                  final success = await _apiService.comprarBoletos(_boletosComprar);
+                  
+                  if (success) {
+                    await _loadBoletos();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('¡Compra exitosa!')),
+                      );
+                    }
+                  } else {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Error al procesar la compra')),
+                      );
+                    }
                   }
                 }
               },
