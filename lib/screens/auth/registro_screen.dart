@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../home/home_screen.dart';
+import '../../theme/app_theme.dart';
 
 class RegistroScreen extends StatefulWidget {
   const RegistroScreen({super.key});
@@ -39,9 +40,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
   Color _fortalezaColor() {
     final pass = _contrasenaController.text;
-    if (pass.isEmpty || pass.length < 6) return Colors.redAccent;
-    if (pass.length < 10) return Colors.orangeAccent;
-    return Colors.green;
+    if (pass.isEmpty || pass.length < 6) return AppColors.error;
+    if (pass.length < 10) return AppColors.accentDark;
+    return AppColors.success;
   }
 
   void _actualizarUI() {
@@ -81,7 +82,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Revisa los campos para continuar.'),
-          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -93,273 +93,233 @@ class _RegistroScreenState extends State<RegistroScreen> {
     );
   }
 
-  InputDecoration _inputDecoration({
-    required String label,
-    required IconData icon,
-    String? helperText,
-    Widget? suffix,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      helperText: helperText,
-      prefixIcon: Icon(icon),
-      suffixIcon: suffix,
-      filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.92),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.indigo, width: 1.6),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registro'),
-        elevation: 0,
+        title: const Text('Crear cuenta'),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.indigo.shade50,
-              Colors.white,
-            ],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: SingleChildScrollView(
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeOut,
-              builder: (context, value, child) {
-                return Opacity(
-                  opacity: value,
-                  child: Transform.translate(
-                    offset: Offset(0, (1 - value) * 12),
-                    child: child,
-                  ),
-                );
-              },
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.86),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.indigo.withValues(alpha: 0.08),
-                            blurRadius: 14,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, (1 - value) * 12),
+                  child: child,
+                ),
+              );
+            },
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.person_add_alt_1_rounded,
+                          color: AppColors.primary,
+                          size: 28,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.person_add_alt_1_rounded,
-                                  color: Colors.indigo),
-                              SizedBox(width: 8),
                               Text(
                                 'Crea tu cuenta',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w700,
+                                  color: AppColors.primaryDark,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Completa los datos para continuar',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Completa los datos para continuar.',
-                            style: TextStyle(color: Colors.black54),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      controller: _nombreController,
-                      decoration: _inputDecoration(
-                        label: 'Nombre',
-                        icon: Icons.person_outline,
-                      ),
-                      textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Ingresa tu nombre';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      controller: _apellidoController,
-                      decoration: _inputDecoration(
-                        label: 'Apellido',
-                        icon: Icons.badge_outlined,
-                      ),
-                      textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Ingresa tu apellido';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      controller: _correoController,
-                      decoration: _inputDecoration(
-                        label: 'Correo',
-                        icon: Icons.email_outlined,
-                        helperText: 'Usa tu correo institucional',
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        final correo = value?.trim() ?? '';
-                        if (correo.isEmpty) {
-                          return 'Ingresa tu correo';
-                        }
-                        if (!correo.contains('@') || !correo.contains('.')) {
-                          return 'Correo no valido';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      controller: _contrasenaController,
-                      decoration: _inputDecoration(
-                        label: 'Contrasena',
-                        icon: Icons.lock_outline,
-                        suffix: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _mostrarContrasena = !_mostrarContrasena;
-                            });
-                          },
-                          icon: Icon(
-                            _mostrarContrasena
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                          ),
-                        ),
-                      ),
-                      obscureText: !_mostrarContrasena,
-                      textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        if (value == null || value.length < 6) {
-                          return 'Minimo 6 caracteres';
-                        }
-                        return null;
-                      },
-                    ),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      height: _contrasenaController.text.isEmpty ? 0 : 22,
-                      alignment: Alignment.centerLeft,
-                      child: _contrasenaController.text.isEmpty
-                          ? const SizedBox.shrink()
-                          : Text(
-                              _fortalezaContrasena(),
-                              style: TextStyle(
-                                color: _fortalezaColor(),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                              ),
-                            ),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      controller: _confirmarController,
-                      decoration: _inputDecoration(
-                        label: 'Confirmar Contrasena',
-                        icon: Icons.lock_reset_outlined,
-                        suffix: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _mostrarConfirmacion = !_mostrarConfirmacion;
-                            });
-                          },
-                          icon: Icon(
-                            _mostrarConfirmacion
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                          ),
-                        ),
-                      ),
-                      obscureText: !_mostrarConfirmacion,
-                      validator: (value) {
-                        if (value != _contrasenaController.text) {
-                          return 'Las contrasenas no coinciden';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 30),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text('Atras'),
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-                        Expanded(
-                          child: AnimatedScale(
-                            duration: const Duration(milliseconds: 180),
-                            scale: _progresoRegistro == 1 ? 1.0 : 0.98,
-                            child: ElevatedButton(
-                              onPressed: _registrarse,
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 15),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 2,
-                              ),
-                              child: const Text('Sig.'),
-                            ),
-                          ),
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: _progresoRegistro,
+                      minHeight: 6,
+                      backgroundColor: AppColors.divider,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _nombreController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre',
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu nombre';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _apellidoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Apellido',
+                      prefixIcon: Icon(Icons.badge_outlined),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu apellido';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _correoController,
+                    decoration: const InputDecoration(
+                      labelText: 'Correo institucional',
+                      prefixIcon: Icon(Icons.email_outlined),
+                      helperText: 'Usa tu correo @udlap.mx',
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      final correo = value?.trim() ?? '';
+                      if (correo.isEmpty) return 'Ingresa tu correo';
+                      if (!correo.contains('@') || !correo.contains('.')) {
+                        return 'Correo no válido';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _contrasenaController,
+                    obscureText: !_mostrarContrasena,
+                    decoration: InputDecoration(
+                      labelText: 'Contraseña',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _mostrarContrasena = !_mostrarContrasena;
+                          });
+                        },
+                        icon: Icon(
+                          _mostrarContrasena
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                      ),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    validator: (value) {
+                      if (value == null || value.length < 6) {
+                        return 'Mínimo 6 caracteres';
+                      }
+                      return null;
+                    },
+                  ),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    height: _contrasenaController.text.isEmpty ? 0 : 24,
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(top: 6, left: 4),
+                    child: _contrasenaController.text.isEmpty
+                        ? const SizedBox.shrink()
+                        : Text(
+                            _fortalezaContrasena(),
+                            style: TextStyle(
+                              color: _fortalezaColor(),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _confirmarController,
+                    obscureText: !_mostrarConfirmacion,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar contraseña',
+                      prefixIcon: const Icon(Icons.lock_reset_outlined),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _mostrarConfirmacion = !_mostrarConfirmacion;
+                          });
+                        },
+                        icon: Icon(
+                          _mostrarConfirmacion
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value != _contrasenaController.text) {
+                        return 'Las contraseñas no coinciden';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 28),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 52,
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Atrás'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        flex: 2,
+                        child: SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: _registrarse,
+                            child: const Text('Registrarme'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
             ),
           ),

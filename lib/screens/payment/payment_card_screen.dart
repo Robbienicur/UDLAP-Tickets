@@ -1,36 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'payment_success_screen.dart';
-
-const Color authBackground = Color(0xFFF3F4F8);
-const Color authPrimary = Color(0xFF4A6C94);
-const Color authSecondary = Color(0xFFE8EAF0);
-const Color authBorder = Color(0xFF8A8A8A);
-const Color authLabel = Color(0xFF6A6A6A);
-
-ButtonStyle paymentPrimaryButtonStyle() {
-  return ElevatedButton.styleFrom(
-    elevation: 1,
-    backgroundColor: authSecondary,
-    foregroundColor: authPrimary,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
-    ),
-  );
-}
-
-ButtonStyle paymentOutlinedButtonStyle() {
-  return ElevatedButton.styleFrom(
-    elevation: 1,
-    backgroundColor: authSecondary,
-    foregroundColor: authPrimary,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
-    ),
-  );
-}
+import '../../theme/app_theme.dart';
 
 class PaymentCardScreen extends StatefulWidget {
   final int cantidad;
@@ -79,19 +50,18 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
   void continuar() {
     if (!isCardValid || !isExpiryValid || !isCvvValid) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Completa correctamente los campos")),
+        const SnackBar(content: Text('Completa correctamente los campos')),
       );
       return;
     }
 
     if (!aceptoTerminos) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Debes aceptar términos")),
+        const SnackBar(content: Text('Debes aceptar los términos')),
       );
       return;
     }
 
-    // IR A PANTALLA DE PAGO EXITOSO
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -100,7 +70,7 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
     );
   }
 
-  Widget buildField({
+  Widget _buildField({
     required String label,
     required TextEditingController controller,
     required String hint,
@@ -108,50 +78,32 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
     required List<TextInputFormatter> formatters,
     required TextInputType type,
     required bool isValid,
+    IconData? icon,
+    bool obscure = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: authLabel,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (controller.text.isNotEmpty)
-              Icon(
-                isValid ? Icons.check_circle : Icons.error,
-                color: isValid ? Colors.green : Colors.red,
-                size: 20,
-              ),
-          ],
-        ),
-
         TextField(
           controller: controller,
           keyboardType: type,
           inputFormatters: formatters,
           onChanged: validator,
+          obscureText: obscure,
           decoration: InputDecoration(
+            labelText: label,
             hintText: hint,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: authBorder),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: authPrimary, width: 1.4),
-            ),
+            prefixIcon: icon == null ? null : Icon(icon),
+            suffixIcon: controller.text.isNotEmpty
+                ? Icon(
+                    isValid ? Icons.check_circle : Icons.error_outline,
+                    color: isValid ? AppColors.success : AppColors.error,
+                    size: 20,
+                  )
+                : null,
           ),
         ),
-
-        const SizedBox(height: 15),
+        const SizedBox(height: 14),
       ],
     );
   }
@@ -159,141 +111,161 @@ class _PaymentCardScreenState extends State<PaymentCardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: authBackground,
-
       appBar: AppBar(
-        title: const Text("Pago con tarjeta"),
-        backgroundColor: authBackground,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Pago con tarjeta'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-
-            Text(
-              "${widget.cantidad} boleto${widget.cantidad == 1 ? '' : 's'}",
-              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 10),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.86),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Text(
-                "Importe: \$${widget.total}",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: authLabel,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primary, AppColors.primaryDark],
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${widget.cantidad} ${widget.cantidad == 1 ? "boleto" : "boletos"}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Importe a pagar',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '\$${widget.total}',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            buildField(
-              label: "Número de tarjeta",
-              controller: cardController,
-              hint: "1234567890123456",
-              type: TextInputType.number,
-              isValid: isCardValid,
-              validator: validateCard,
-              formatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(16),
-              ],
-            ),
-
-            buildField(
-              label: "Fecha",
-              controller: expiryController,
-              hint: "MM/AA",
-              type: TextInputType.number,
-              isValid: isExpiryValid,
-              validator: validateExpiry,
-              formatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
-                LengthLimitingTextInputFormatter(5),
-              ],
-            ),
-
-            buildField(
-              label: "CVV",
-              controller: cvvController,
-              hint: "123",
-              type: TextInputType.number,
-              isValid: isCvvValid,
-              validator: validateCvv,
-              formatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(4),
-              ],
-            ),
-
-            Row(
-              children: [
-                Checkbox(
-                  value: aceptoTerminos,
-                  onChanged: (v) {
-                    setState(() => aceptoTerminos = v ?? false);
-                  },
-                  activeColor: authPrimary,
-                ),
-                const Expanded(
-                  child: Text("He leído y acepto los términos"),
-                ),
-              ],
-            ),
-
-            const Spacer(),
-
-            // BOTONES
-            Row(
-              children: [
-
-                // CANCELAR
-                Expanded(
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: paymentOutlinedButtonStyle(),
-                    child: const Text(
-                      "Cancelar",
+              const SizedBox(height: 24),
+              _buildField(
+                label: 'Número de tarjeta',
+                controller: cardController,
+                hint: '1234 5678 9012 3456',
+                type: TextInputType.number,
+                isValid: isCardValid,
+                validator: validateCard,
+                icon: Icons.credit_card,
+                formatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(16),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildField(
+                      label: 'Fecha',
+                      controller: expiryController,
+                      hint: 'MM/AA',
+                      type: TextInputType.number,
+                      isValid: isExpiryValid,
+                      validator: validateExpiry,
+                      icon: Icons.calendar_today_outlined,
+                      formatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+                        LengthLimitingTextInputFormatter(5),
+                      ],
                     ),
                   ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _buildField(
+                      label: 'CVV',
+                      controller: cvvController,
+                      hint: '123',
+                      type: TextInputType.number,
+                      isValid: isCvvValid,
+                      validator: validateCvv,
+                      icon: Icons.lock_outline,
+                      obscure: true,
+                      formatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4),
+                      ],
+                    ),
                   ),
-                ),
-
-                const SizedBox(width: 16),
-
-                // CONTINUAR
-                Expanded(
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: continuar,
-                      style: paymentPrimaryButtonStyle(),
-                      child: const Text(
-                        "Continuar",
+                ],
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: aceptoTerminos,
+                    onChanged: (v) {
+                      setState(() => aceptoTerminos = v ?? false);
+                    },
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'He leído y acepto los términos',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancelar'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: continuar,
+                        child: const Text('Pagar'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
