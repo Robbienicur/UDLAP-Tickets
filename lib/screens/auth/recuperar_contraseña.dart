@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
-
 
 class RecuperarContrasenaScreen extends StatefulWidget {
   const RecuperarContrasenaScreen({super.key});
@@ -36,7 +37,7 @@ class _RecuperarContrasenaScreenState
       barrierLabel: 'Cargando',
       pageBuilder: (_, __, ___) {
         return Material(
-          color: const Color(0xFFF3F4F8),
+          color: AppColors.background,
           child: _PantallaCarga(titulo: titulo),
         );
       },
@@ -56,17 +57,13 @@ class _RecuperarContrasenaScreenState
 
   Future<void> _enviarCodigo() async {
     FocusScope.of(context).unfocus();
-
     final correo = _correoController.text.trim();
-
-    setState(() {
-      _limpiarMensajes();
-    });
+    setState(_limpiarMensajes);
 
     if (correo.isEmpty) {
       setState(() {
         _mensajeError =
-            'Error: Antes de enviar el código debe proporcionar su correo institucional.';
+            'Antes de enviar el código debe proporcionar su correo institucional.';
       });
       return;
     }
@@ -78,30 +75,26 @@ class _RecuperarContrasenaScreenState
 
     if (!emailExists) {
       setState(() {
-        _mensajeError = 'Error: Dirección de correo no registrada.';
+        _mensajeError = 'Dirección de correo no registrada.';
       });
       return;
     }
 
     setState(() {
       _codigoEnviado = true;
-      _mensajeExito = 'Se ha enviado el código (Demo: 123)';
+      _mensajeExito = 'Se ha enviado el código a tu correo (Demo: 123)';
     });
   }
 
   Future<void> _reenviarCodigo() async {
     FocusScope.of(context).unfocus();
-
     final correo = _correoController.text.trim();
-
-    setState(() {
-      _limpiarMensajes();
-    });
+    setState(_limpiarMensajes);
 
     if (correo.isEmpty) {
       setState(() {
         _mensajeError =
-            'Error: Antes de reenviar el código debe proporcionar su correo institucional o con el que se registró.';
+            'Proporciona tu correo institucional antes de reenviar el código.';
       });
       return;
     }
@@ -109,7 +102,7 @@ class _RecuperarContrasenaScreenState
     final emailExists = await _apiService.resetPassword(correo, checkOnly: true);
     if (!emailExists) {
       setState(() {
-        _mensajeError = 'Error: Dirección de correo no registrada.';
+        _mensajeError = 'Dirección de correo no registrada.';
       });
       return;
     }
@@ -117,12 +110,12 @@ class _RecuperarContrasenaScreenState
     if (!_codigoEnviado) {
       setState(() {
         _mensajeError =
-            'Error: Aún no se envía un código porque no se ha proporcionado una dirección de correo electrónico.';
+            'Aún no se envía un código porque no se ha proporcionado un correo.';
       });
       return;
     }
 
-    await _mostrarCarga('Redirigiendo');
+    await _mostrarCarga('Reenviando código');
 
     setState(() {
       _mensajeExito = 'Se ha reenviado el código';
@@ -131,18 +124,13 @@ class _RecuperarContrasenaScreenState
 
   Future<void> _continuar() async {
     FocusScope.of(context).unfocus();
-
     final correo = _correoController.text.trim();
     final codigo = _codigoController.text.trim();
-
-    setState(() {
-      _limpiarMensajes();
-    });
+    setState(_limpiarMensajes);
 
     if (correo.isEmpty) {
       setState(() {
-        _mensajeError =
-            'Error: Antes de continuar debe proporcionar su correo institucional.';
+        _mensajeError = 'Proporciona tu correo institucional.';
       });
       return;
     }
@@ -150,39 +138,33 @@ class _RecuperarContrasenaScreenState
     final emailExists = await _apiService.resetPassword(correo, checkOnly: true);
     if (!emailExists) {
       setState(() {
-        _mensajeError = 'Error: Dirección de correo no registrada.';
+        _mensajeError = 'Dirección de correo no registrada.';
       });
       return;
     }
 
     if (!_codigoEnviado) {
       setState(() {
-        _mensajeError = 'Error: Aún no se envió un código.';
+        _mensajeError = 'Aún no se envió un código.';
       });
       return;
     }
 
     if (codigo.isEmpty) {
       setState(() {
-        _mensajeExito = 'Se ha enviado el código';
-        _mensajeError = 'Error: No se ha proporcionado ningún código.';
+        _mensajeError = 'No se ha proporcionado ningún código.';
       });
       return;
     }
 
     if (codigo != _codigoCorrecto) {
       setState(() {
-        _mensajeExito = 'Se ha enviado el código';
-        _mensajeError = 'Error: Código incorrecto, vuelva a intentar.';
+        _mensajeError = 'Código incorrecto, vuelve a intentar.';
       });
       return;
     }
 
-    setState(() {
-      _mensajeExito = 'Se ha enviado el código';
-    });
-
-    await _mostrarCarga('Redirigiendo');
+    await _mostrarCarga('Verificando');
 
     if (!mounted) return;
 
@@ -194,201 +176,137 @@ class _RecuperarContrasenaScreenState
     );
   }
 
-  Widget _campoTexto({
-    required String label,
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    bool mostrarCheck = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF6A6A6A),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: Icon(icon, color: const Color(0xFF555B66)),
-            suffixIcon: mostrarCheck
-                ? const Icon(Icons.check, color: Colors.green)
-                : null,
-            filled: true,
-            fillColor: Colors.transparent,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF8A8A8A)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide:
-                  const BorderSide(color: Color(0xFF4A6C94), width: 1.4),
-            ),
-          ),
-          onChanged: (_) => setState(() {}),
-        ),
-      ],
-    );
-  }
-
-  Widget _botonPequeno({
-    required String texto,
-    required VoidCallback onPressed,
-  }) {
-    return SizedBox(
-      width: 140,
-      height: 38,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: const Color(0xFFE8EAF0),
-          foregroundColor: const Color(0xFF4A6C94),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-        ),
-        child: Text(texto),
-      ),
-    );
-  }
-
-  Widget _botonGrande({
-    required String texto,
-    required VoidCallback onPressed,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          elevation: 1,
-          backgroundColor: const Color(0xFFE8EAF0),
-          foregroundColor: const Color(0xFF4A6C94),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-        ),
-        child: Text(
-          texto,
-          style: const TextStyle(fontSize: 16),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final correoConCheck = _correoController.text.trim().isNotEmpty;
-    final codigoConCheck = _codigoController.text.trim().isNotEmpty;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F8),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
               const Text(
                 'Olvidé mi\ncontraseña',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  height: 1.15,
                 ),
               ),
-              const SizedBox(height: 44),
-              _campoTexto(
-                label: 'Correo electrónico',
-                controller: _correoController,
-                hint: 'Correo electrónico',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                mostrarCheck: correoConCheck,
+              const SizedBox(height: 8),
+              const Text(
+                'Te enviaremos un código a tu correo institucional',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
               ),
-              const SizedBox(height: 14),
-              _botonPequeno(
-                texto: 'Enviar código',
-                onPressed: _enviarCodigo,
+              const SizedBox(height: 32),
+              TextField(
+                controller: _correoController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Correo electrónico',
+                  hintText: 'estudiante@udlap.mx',
+                  prefixIcon: PhosphorIcon(PhosphorIcons.envelope()),
+                  suffixIcon: _correoController.text.trim().isNotEmpty
+                      ? PhosphorIcon(
+                          PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
+                          color: AppColors.success,
+                        )
+                      : null,
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: _enviarCodigo,
+                  icon: PhosphorIcon(
+                    PhosphorIcons.paperPlaneTilt(PhosphorIconsStyle.bold),
+                    size: 18,
+                  ),
+                  label: const Text('Enviar código'),
+                ),
               ),
               if (_mensajeExito.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text(
-                  _mensajeExito,
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                  ),
+                const SizedBox(height: 12),
+                _MensajeBanner(
+                  texto: _mensajeExito,
+                  color: AppColors.success,
+                  icon: Icons.check_circle_outline,
                 ),
               ],
-              const SizedBox(height: 34),
-              _campoTexto(
-                label: 'Ingresar código',
+              const SizedBox(height: 28),
+              TextField(
                 controller: _codigoController,
-                hint: '###',
-                icon: Icons.numbers,
                 keyboardType: TextInputType.number,
-                mostrarCheck: codigoConCheck,
-              ),
-              const SizedBox(height: 14),
-              _botonPequeno(
-                texto: 'Reenviar código',
-                onPressed: _reenviarCodigo,
-              ),
-              const SizedBox(height: 24),
-              if (_mensajeError.isNotEmpty)
-                Text(
-                  _mensajeError,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                  ),
+                decoration: InputDecoration(
+                  labelText: 'Ingresar código',
+                  hintText: '###',
+                  prefixIcon: const Icon(Icons.numbers),
+                  suffixIcon: _codigoController.text.trim().isNotEmpty
+                      ? const Icon(
+                          Icons.check_circle,
+                          color: AppColors.success,
+                        )
+                      : null,
                 ),
-              const SizedBox(height: 80),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: _reenviarCodigo,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Reenviar código'),
+                ),
+              ),
+              if (_mensajeError.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                _MensajeBanner(
+                  texto: _mensajeError,
+                  color: AppColors.error,
+                  icon: Icons.error_outline,
+                ),
+              ],
+              const SizedBox(height: 40),
               Row(
                 children: [
                   Expanded(
-                    child: _botonGrande(
-                      texto: 'Atrás',
-                      onPressed: () => Navigator.pop(context),
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Atrás'),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   Expanded(
-                    child: _botonGrande(
-                      texto: 'Continuar',
-                      onPressed: _continuar,
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _continuar,
+                        child: const Text('Continuar'),
+                      ),
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -400,10 +318,7 @@ class _RecuperarContrasenaScreenState
 class RecuperarCuentaScreen extends StatefulWidget {
   final String correo;
 
-  const RecuperarCuentaScreen({
-    super.key,
-    required this.correo,
-  });
+  const RecuperarCuentaScreen({super.key, required this.correo});
 
   @override
   State<RecuperarCuentaScreen> createState() => _RecuperarCuentaScreenState();
@@ -430,7 +345,7 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
       barrierLabel: 'Cargando',
       pageBuilder: (_, __, ___) {
         return Material(
-          color: const Color(0xFFF3F4F8),
+          color: AppColors.background,
           child: _PantallaCarga(titulo: titulo),
         );
       },
@@ -455,22 +370,21 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
 
     if (nueva.isEmpty || confirmar.isEmpty) {
       setState(() {
-        _mensajeError = 'Error: Debe completar ambos campos.';
+        _mensajeError = 'Debes completar ambos campos.';
       });
       return;
     }
 
     if (nueva.length < 6) {
       setState(() {
-        _mensajeError =
-            'Error: La nueva contraseña debe tener al menos 6 caracteres.';
+        _mensajeError = 'La nueva contraseña debe tener al menos 6 caracteres.';
       });
       return;
     }
 
     if (nueva != confirmar) {
       setState(() {
-        _mensajeError = 'Error: Las contraseñas no coinciden.';
+        _mensajeError = 'Las contraseñas no coinciden.';
       });
       return;
     }
@@ -478,7 +392,7 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
     await _mostrarCarga('Actualizando contraseña');
 
     final success = await _apiService.resetPassword(widget.correo, newPassword: nueva);
-    print('DEBUG RESET: Actualización de $widget.correo exitosa? $success');
+    print('DEBUG RESET: Actualización de ${widget.correo} exitosa? $success');
 
     if (!success) {
       setState(() {
@@ -497,139 +411,90 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
     );
   }
 
-  Widget _campoPassword({
-    required String label,
-    required TextEditingController controller,
-  }) {
-    final lleno = controller.text.trim().isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF6A6A6A),
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          obscureText: true,
-          decoration: InputDecoration(
-            hintText: '######',
-            prefixIcon: const Icon(
-              Icons.lock_outline,
-              color: Color(0xFF555B66),
-            ),
-            suffixIcon:
-                lleno ? const Icon(Icons.check, color: Colors.green) : null,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF8A8A8A)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide:
-                  const BorderSide(color: Color(0xFF4A6C94), width: 1.4),
-            ),
-          ),
-          onChanged: (_) => setState(() {}),
-        ),
-      ],
-    );
-  }
-
-  Widget _boton({
-    required String texto,
-    required VoidCallback onPressed,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          elevation: 1,
-          backgroundColor: const Color(0xFFE8EAF0),
-          foregroundColor: const Color(0xFF4A6C94),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-        ),
-        child: Text(texto),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F8),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
               const Text(
                 'Recuperar cuenta',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 48),
-              _campoPassword(
-                label: 'Ingrese nueva contraseña',
-                controller: _nuevaController,
+              const SizedBox(height: 8),
+              const Text(
+                'Crea una nueva contraseña segura',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
               ),
-              const SizedBox(height: 24),
-              _campoPassword(
-                label: 'Confirmar contraseña',
+              const SizedBox(height: 36),
+              TextField(
+                controller: _nuevaController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Nueva contraseña',
+                  hintText: '••••••',
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 16),
+              TextField(
                 controller: _confirmarController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Confirmar contraseña',
+                  hintText: '••••••',
+                  prefixIcon: Icon(Icons.lock_reset_outlined),
+                ),
+                onChanged: (_) => setState(() {}),
               ),
               if (_mensajeError.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Text(
-                  _mensajeError,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                  ),
+                const SizedBox(height: 16),
+                _MensajeBanner(
+                  texto: _mensajeError,
+                  color: AppColors.error,
+                  icon: Icons.error_outline,
                 ),
               ],
-              const SizedBox(height: 110),
+              const SizedBox(height: 40),
               Row(
                 children: [
                   Expanded(
-                    child: _boton(
-                      texto: 'Cancelar',
-                      onPressed: () => Navigator.pop(context),
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancelar'),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   Expanded(
-                    child: _boton(
-                      texto: 'Continuar',
-                      onPressed: _continuar,
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _continuar,
+                        child: const Text('Continuar'),
+                      ),
                     ),
                   ),
                 ],
@@ -645,45 +510,58 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
 class ContrasenaGeneradaScreen extends StatelessWidget {
   final String correo;
 
-  const ContrasenaGeneradaScreen({
-    super.key,
-    required this.correo,
-  });
+  const ContrasenaGeneradaScreen({super.key, required this.correo});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F8),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
             children: [
               const Spacer(),
+              Container(
+                width: 96,
+                height: 96,
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  size: 56,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 28),
               const Text(
                 'Contraseña\ngenerada\nexitosamente',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  height: 1.15,
                 ),
               ),
-              const SizedBox(height: 34),
+              const SizedBox(height: 18),
               const Text(
-                'Se ha actualizado la\ncontraseña de la cuenta',
+                'Se ha actualizado la contraseña de la cuenta',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 14),
               Text(
                 correo,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
-                  color: Colors.black54,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
                 ),
               ),
               const Spacer(),
@@ -694,21 +572,53 @@ class ContrasenaGeneradaScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.popUntil(context, (route) => route.isFirst);
                   },
-                  style: ElevatedButton.styleFrom(
-                    elevation: 1,
-                    backgroundColor: const Color(0xFFE8EAF0),
-                    foregroundColor: const Color(0xFF4A6C94),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
                   child: const Text('Entendido'),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MensajeBanner extends StatelessWidget {
+  final String texto;
+  final Color color;
+  final IconData icon;
+
+  const _MensajeBanner({
+    required this.texto,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              texto,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -732,22 +642,26 @@ class _PantallaCarga extends StatelessWidget {
                 titulo,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 46),
-              const SizedBox(
-                width: 70,
-                height: 70,
-                child: CircularProgressIndicator(strokeWidth: 6),
-              ),
               const SizedBox(height: 36),
+              const SizedBox(
+                width: 60,
+                height: 60,
+                child: CircularProgressIndicator(
+                  strokeWidth: 5,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 28),
               const Text(
-                'Espere unos momentos.....',
+                'Espera unos momentos…',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],

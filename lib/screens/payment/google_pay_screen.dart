@@ -1,34 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'payment_success_screen.dart';
-
-const Color authBackground = Color(0xFFF3F4F8);
-const Color authPrimary = Color(0xFF4A6C94);
-const Color authSecondary = Color(0xFFE8EAF0);
-const Color authLabel = Color(0xFF6A6A6A);
-
-ButtonStyle paymentPrimaryButtonStyle() {
-  return ElevatedButton.styleFrom(
-    elevation: 1,
-    backgroundColor: authSecondary,
-    foregroundColor: authPrimary,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
-    ),
-  );
-}
-
-ButtonStyle paymentOutlinedButtonStyle() {
-  return ElevatedButton.styleFrom(
-    elevation: 1,
-    backgroundColor: authSecondary,
-    foregroundColor: authPrimary,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
-    ),
-  );
-}
+import '../../theme/app_theme.dart';
 
 class GooglePayScreen extends StatefulWidget {
   final int cantidad;
@@ -50,9 +24,7 @@ class _GooglePayScreenState extends State<GooglePayScreen> {
 
   Future<void> procesarPago() async {
     setState(() => cargando = true);
-
     await Future.delayed(const Duration(seconds: 2));
-
     if (!mounted) return;
     setState(() => cargando = false);
 
@@ -64,105 +36,201 @@ class _GooglePayScreenState extends State<GooglePayScreen> {
     );
 
     if (!mounted) return;
-    if (ok == true) {
-      Navigator.pop(context, true);
-    }
+    if (ok == true) Navigator.pop(context, true);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pago con Google Pay"),
-        backgroundColor: authBackground,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Pago con Google Pay'),
+        leading: IconButton(
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      backgroundColor: authBackground,
       body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _ImporteHeader(
+                    cantidad: widget.cantidad,
+                    total: widget.total,
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            PhosphorIcon(
+                              PhosphorIcons.googleLogo(PhosphorIconsStyle.bold),
+                              color: const Color(0xFF4285F4),
+                              size: 26,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Google Pay',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 14),
+                        Text(
+                          'Confirma el pago con tu cuenta de Google. La transacción se procesará de forma segura.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  _CheckTerminos(
+                    aceptado: aceptado,
+                    onChanged: (v) => setState(() => aceptado = v ?? false),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 52,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Cancelar'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: aceptado
+                                ? () {
+                                    HapticFeedback.mediumImpact();
+                                    procesarPago();
+                                  }
+                                : null,
+                            child: const Text('Continuar'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (cargando)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(color: AppColors.accent),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ImporteHeader extends StatelessWidget {
+  final int cantidad;
+  final int total;
+
+  const _ImporteHeader({required this.cantidad, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                Text("${widget.cantidad} boletos a comprar"),
-                const SizedBox(height: 5),
-                Text("Importe: \$${widget.total}",
-                    style: const TextStyle(
-                      color: authLabel,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    )),
-
-                const SizedBox(height: 30),
-
-                Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Center(
-                    child: Text("Simulación Google Pay UI"),
+                Text(
+                  '$cantidad ${cantidad == 1 ? "boleto" : "boletos"}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-
-                const Spacer(),
-
-                Row(
-                  children: [
-                    Checkbox(
-                      value: aceptado,
-                      onChanged: (v) {
-                        setState(() => aceptado = v!);
-                      },
-                    ),
-                    const Expanded(
-                      child: Text(
-                          "He leído y acepto los términos y condiciones"),
-                    )
-                  ],
+                const SizedBox(height: 4),
+                const Text(
+                  'Importe a pagar',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: paymentOutlinedButtonStyle(),
-                          child: const Text("Cancelar"),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: SizedBox(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: aceptado ? procesarPago : null,
-                          style: paymentPrimaryButtonStyle(),
-                          child: const Text("Continuar"),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
               ],
             ),
           ),
-
-          if (cargando)
-            Container(
-              color: Colors.black26,
-              child: const Center(child: CircularProgressIndicator()),
-            )
+          Text(
+            '\$$total',
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: AppColors.accent,
+            ),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _CheckTerminos extends StatelessWidget {
+  final bool aceptado;
+  final ValueChanged<bool?> onChanged;
+
+  const _CheckTerminos({required this.aceptado, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Checkbox(value: aceptado, onChanged: onChanged),
+        const Expanded(
+          child: Text(
+            'He leído y acepto los términos y condiciones',
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+        ),
+      ],
     );
   }
 }

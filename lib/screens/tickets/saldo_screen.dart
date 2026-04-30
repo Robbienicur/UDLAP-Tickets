@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'recargar_saldo_screen.dart';
+import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
 class SaldoScreen extends StatelessWidget {
@@ -10,71 +13,99 @@ class SaldoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiService = ApiService();
-    double saldoDisponible = apiService.saldo;
-    double precioBoleto = 25.00;
-    double saldoExigible = cantidadBoletos * precioBoleto;
-    double saldoRestante = saldoDisponible - saldoExigible;
+    final double saldoDisponible = apiService.saldo;
+    const double precioBoleto = 25.00;
+    final double saldoExigible = cantidadBoletos * precioBoleto;
+    final double saldoRestante = saldoDisponible - saldoExigible;
+    final bool suficiente = saldoRestante >= 0;
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Pagar con saldo'),
+        leading: IconButton(
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Center(
-                child: Text(
-                  'Saldo',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primary, AppColors.primaryDark],
                   ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        PhosphorIcon(
+                          PhosphorIcons.wallet(),
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Saldo disponible',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '\$${saldoDisponible.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 5),
-              IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.arrow_back),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Column(
+                  children: [
+                    _LineaDetalle(
+                      etiqueta: 'A pagar',
+                      valor: '\$${saldoExigible.toStringAsFixed(2)}',
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    _LineaDetalle(
+                      etiqueta: 'Saldo restante',
+                      valor: '\$${saldoRestante.toStringAsFixed(2)}',
+                      destacado: true,
+                      esError: !suficiente,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 30),
-              const Text(
-                'Saldo disponible',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              Text(
-                '\$${saldoDisponible.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(height: 25),
-              const Text(
-                'Saldo exigible',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              Text(
-                '\$${saldoExigible.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(height: 10),
-              const Divider(thickness: 2),
-              const SizedBox(height: 10),
-              const Text(
-                'Saldo restante',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              Text(
-                '\$${saldoRestante.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerRight,
-                child: ElevatedButton(
+                child: TextButton.icon(
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -83,34 +114,41 @@ class SaldoScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Recargar'),
+                  icon: PhosphorIcon(
+                    PhosphorIcons.plusCircle(PhosphorIconsStyle.bold),
+                    size: 18,
+                  ),
+                  label: const Text('Recargar saldo'),
                 ),
               ),
               const Spacer(),
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancelar'),
                       ),
-                      child: const Text('Cancelar'),
                     ),
                   ),
-                  const SizedBox(width: 15),
+                  const SizedBox(width: 14),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: saldoRestante >= 0 
-                        ? () => Navigator.pop(context, true)
-                        : null,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        backgroundColor: saldoRestante >= 0 ? Colors.blue : Colors.grey,
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: suficiente
+                            ? () {
+                                HapticFeedback.mediumImpact();
+                                Navigator.pop(context, true);
+                              }
+                            : null,
+                        child: Text(suficiente ? 'Pagar' : 'Saldo Insuficiente'),
                       ),
-                      child: Text(saldoRestante >= 0 ? 'Pagar' : 'Saldo Insuficiente'),
                     ),
                   ),
                 ],
@@ -119,6 +157,48 @@ class SaldoScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LineaDetalle extends StatelessWidget {
+  final String etiqueta;
+  final String valor;
+  final bool destacado;
+  final bool esError;
+
+  const _LineaDetalle({
+    required this.etiqueta,
+    required this.valor,
+    this.destacado = false,
+    this.esError = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = esError
+        ? AppColors.error
+        : (destacado ? AppColors.accentDark : AppColors.textPrimary);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          etiqueta,
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          valor,
+          style: TextStyle(
+            fontSize: destacado ? 22 : 18,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 }

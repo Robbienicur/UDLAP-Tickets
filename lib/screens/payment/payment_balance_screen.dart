@@ -1,23 +1,7 @@
 import 'package:flutter/material.dart';
 import '../tickets/recargar_saldo_screen.dart';
 import 'payment_success_screen.dart';
-
-const Color authBackground = Color(0xFFF3F4F8);
-const Color authPrimary = Color(0xFF4A6C94);
-const Color authSecondary = Color(0xFFE8EAF0);
-const Color authLabel = Color(0xFF6A6A6A);
-
-ButtonStyle paymentOutlinedButtonStyle() {
-  return ElevatedButton.styleFrom(
-    elevation: 1,
-    backgroundColor: authSecondary,
-    foregroundColor: authPrimary,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(28),
-    ),
-  );
-}
+import '../../theme/app_theme.dart';
 
 class PaymentBalanceScreen extends StatelessWidget {
   final int total;
@@ -31,169 +15,224 @@ class PaymentBalanceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int saldoRestante = saldoDisponible - total;
-    bool saldoSuficiente = saldoDisponible >= total;
+    final int saldoRestante = saldoDisponible - total;
+    final bool saldoSuficiente = saldoDisponible >= total;
 
     return Scaffold(
-      backgroundColor: authBackground,
       appBar: AppBar(
-        title: const Text("Saldo"),
-        backgroundColor: authBackground,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Pagar con saldo'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            const SizedBox(height: 20),
-
-            // SALDO DISPONIBLE
-            const Text(
-              "Saldo disponible",
-              style: TextStyle(color: authLabel),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              "\$$saldoDisponible",
-              style: const TextStyle(fontSize: 18),
-            ),
-
-            const SizedBox(height: 25),
-
-            // SALDO EXIGIBLE
-            const Text(
-              "Saldo exigible",
-              style: TextStyle(color: authLabel),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              "\$$total",
-              style: const TextStyle(fontSize: 18),
-            ),
-
-            const SizedBox(height: 20),
-
-            const Divider(thickness: 2),
-
-            const SizedBox(height: 20),
-
-            // SALDO RESTANTE
-            const Text(
-              "Saldo restante",
-              style: TextStyle(color: authLabel),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              "\$$saldoRestante",
-              style: const TextStyle(fontSize: 18),
-            ),
-
-            // MENSAJE DE ERROR
-            if (!saldoSuficiente)
-              const Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Text(
-                  "Saldo insuficiente",
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primary, AppColors.primaryDark],
                   ),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              ),
-
-            const Spacer(),
-
-            // BOTÓN RECARGAR
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: authSecondary,
-                  foregroundColor: authPrimary,
-                  elevation: 1,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RecargarSaldoScreen(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Saldo disponible',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-                child: const Text("Recargar"),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // BOTONES INFERIORES
-            Row(
-              children: [
-
-                Expanded(
-                  child: ElevatedButton(
-                    style: paymentOutlinedButtonStyle(),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Cancelar"),
-                  ),
-                ),
-
-                const SizedBox(width: 16),
-
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: saldoSuficiente
-                          ? authSecondary
-                          : Colors.grey.shade400,
-                      foregroundColor: saldoSuficiente ? authPrimary : Colors.white,
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
+                    const SizedBox(height: 10),
+                    Text(
+                      '\$$saldoDisponible',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    onPressed: saldoSuficiente
-                        ? () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("Pago realizado con saldo")),
-                            );
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const PaymentSuccessScreen(),
-                              ),
-                            );
-                          }
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("No tienes saldo suficiente")),
-                            );
-                          },
-                    child: const Text("Pagar"),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Column(
+                  children: [
+                    _Linea(
+                      etiqueta: 'A pagar',
+                      valor: '\$$total',
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    _Linea(
+                      etiqueta: 'Saldo restante',
+                      valor: '\$$saldoRestante',
+                      destacado: true,
+                      esError: !saldoSuficiente,
+                    ),
+                  ],
+                ),
+              ),
+              if (!saldoSuficiente) ...[
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.error.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: AppColors.error,
+                        size: 20,
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Saldo insuficiente. Recarga para continuar.',
+                          style: TextStyle(
+                            color: AppColors.error,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            )
-          ],
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RecargarSaldoScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add_card_outlined, size: 18),
+                  label: const Text('Recargar saldo'),
+                ),
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancelar'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: saldoSuficiente
+                            ? () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PaymentSuccessScreen(),
+                                  ),
+                                );
+                              }
+                            : null,
+                        child: const Text('Pagar'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _Linea extends StatelessWidget {
+  final String etiqueta;
+  final String valor;
+  final bool destacado;
+  final bool esError;
+
+  const _Linea({
+    required this.etiqueta,
+    required this.valor,
+    this.destacado = false,
+    this.esError = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = esError
+        ? AppColors.error
+        : (destacado ? AppColors.accentDark : AppColors.textPrimary);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          etiqueta,
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          valor,
+          style: TextStyle(
+            fontSize: destacado ? 22 : 18,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 }
