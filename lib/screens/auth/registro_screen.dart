@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../home/home_screen.dart';
 import '../../theme/app_theme.dart';
 
@@ -127,15 +129,15 @@ class _RegistroScreenState extends State<RegistroScreen> {
                       color: AppColors.primaryContainer,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
-                          Icons.person_add_alt_1_rounded,
+                        PhosphorIcon(
+                          PhosphorIcons.userPlus(PhosphorIconsStyle.fill),
                           color: AppColors.primary,
                           size: 28,
                         ),
-                        SizedBox(width: 12),
-                        Expanded(
+                        const SizedBox(width: 12),
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -176,9 +178,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
                   const SizedBox(height: 20),
                   TextFormField(
                     controller: _nombreController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Nombre',
-                      prefixIcon: Icon(Icons.person_outline),
+                      prefixIcon: PhosphorIcon(PhosphorIcons.user()),
                     ),
                     textInputAction: TextInputAction.next,
                     validator: (value) {
@@ -191,9 +193,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _apellidoController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Apellido',
-                      prefixIcon: Icon(Icons.badge_outlined),
+                      prefixIcon: PhosphorIcon(PhosphorIcons.identificationBadge()),
                     ),
                     textInputAction: TextInputAction.next,
                     validator: (value) {
@@ -206,9 +208,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _correoController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Correo institucional',
-                      prefixIcon: Icon(Icons.email_outlined),
+                      prefixIcon: PhosphorIcon(PhosphorIcons.envelope()),
                       helperText: 'Usa tu correo @udlap.mx',
                     ),
                     keyboardType: TextInputType.emailAddress,
@@ -228,17 +230,17 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     obscureText: !_mostrarContrasena,
                     decoration: InputDecoration(
                       labelText: 'Contraseña',
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: PhosphorIcon(PhosphorIcons.lock()),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
                             _mostrarContrasena = !_mostrarContrasena;
                           });
                         },
-                        icon: Icon(
+                        icon: PhosphorIcon(
                           _mostrarContrasena
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                              ? PhosphorIcons.eyeSlash()
+                              : PhosphorIcons.eye(),
                         ),
                       ),
                     ),
@@ -272,17 +274,17 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     obscureText: !_mostrarConfirmacion,
                     decoration: InputDecoration(
                       labelText: 'Confirmar contraseña',
-                      prefixIcon: const Icon(Icons.lock_reset_outlined),
+                      prefixIcon: PhosphorIcon(PhosphorIcons.shieldCheck()),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
                             _mostrarConfirmacion = !_mostrarConfirmacion;
                           });
                         },
-                        icon: Icon(
+                        icon: PhosphorIcon(
                           _mostrarConfirmacion
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                              ? PhosphorIcons.eyeSlash()
+                              : PhosphorIcons.eye(),
                         ),
                       ),
                     ),
@@ -300,7 +302,10 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         child: SizedBox(
                           height: 52,
                           child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.pop(context);
+                            },
                             child: const Text('Atrás'),
                           ),
                         ),
@@ -311,7 +316,10 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         child: SizedBox(
                           height: 52,
                           child: ElevatedButton(
-                            onPressed: _registrarse,
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              _registrarse();
+                            },
                             child: const Text('Registrarme'),
                           ),
                         ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'payment_success_screen.dart';
 import '../../theme/app_theme.dart';
 
@@ -43,7 +45,7 @@ class _ApplePayScreenState extends State<ApplePayScreen> {
       appBar: AppBar(
         title: const Text('Pago con Apple Pay'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: PhosphorIcon(PhosphorIcons.arrowLeft()),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -66,17 +68,17 @@ class _ApplePayScreenState extends State<ApplePayScreen> {
                       color: AppColors.textPrimary,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.apple_rounded,
+                          PhosphorIcon(
+                            PhosphorIcons.appleLogo(PhosphorIconsStyle.fill),
                             color: Colors.white,
                             size: 48,
                           ),
-                          SizedBox(height: 6),
-                          Text(
+                          const SizedBox(height: 6),
+                          const Text(
                             'Pay',
                             style: TextStyle(
                               color: Colors.white,
@@ -111,7 +113,10 @@ class _ApplePayScreenState extends State<ApplePayScreen> {
                         child: SizedBox(
                           height: 52,
                           child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.pop(context);
+                            },
                             child: const Text('Cancelar'),
                           ),
                         ),
@@ -121,7 +126,12 @@ class _ApplePayScreenState extends State<ApplePayScreen> {
                         child: SizedBox(
                           height: 52,
                           child: ElevatedButton(
-                            onPressed: aceptado ? procesarPago : null,
+                            onPressed: aceptado
+                                ? () {
+                                    HapticFeedback.mediumImpact();
+                                    procesarPago();
+                                  }
+                                : null,
                             child: const Text('Continuar'),
                           ),
                         ),

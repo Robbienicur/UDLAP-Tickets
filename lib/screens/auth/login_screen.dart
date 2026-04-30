@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'registro_screen.dart';
 import '../home/home_screen.dart';
 import 'recuperar_contraseña.dart';
@@ -24,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _iniciarSesion() {
+    HapticFeedback.mediumImpact();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -31,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _irARegistro() {
+    HapticFeedback.selectionClick();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const RegistroScreen()),
@@ -38,10 +42,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _entrarComoInvitado() {
+    HapticFeedback.lightImpact();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => const HomeScreen(esInvitado: true)),
+        builder: (context) => const HomeScreen(esInvitado: true),
+      ),
     );
   }
 
@@ -54,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
               Center(
                 child: Container(
                   width: 110,
@@ -64,8 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.primary.withValues(alpha: 0.18),
-                        blurRadius: 24,
-                        offset: const Offset(0, 8),
+                        blurRadius: 28,
+                        offset: const Offset(0, 12),
                       ),
                     ],
                   ),
@@ -79,32 +85,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 28),
-              const Text(
+              Text(
                 'UDLAP Tickets',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
-                  letterSpacing: -0.5,
-                ),
+                style: AppText.h1(color: AppColors.primary),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Tu acceso digital al estacionamiento',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                style: AppText.body(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 40),
               TextField(
                 controller: _correoController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Correo institucional',
                   hintText: 'estudiante@udlap.mx',
-                  prefixIcon: Icon(Icons.email_outlined),
+                  prefixIcon: PhosphorIcon(PhosphorIcons.envelope()),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -114,17 +112,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: !_mostrarContrasena,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: PhosphorIcon(PhosphorIcons.lock()),
                   suffixIcon: IconButton(
-                    icon: Icon(
+                    icon: PhosphorIcon(
                       _mostrarContrasena
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
+                          ? PhosphorIcons.eyeSlash()
+                          : PhosphorIcons.eye(),
                     ),
                     onPressed: () {
-                      setState(() {
-                        _mostrarContrasena = !_mostrarContrasena;
-                      });
+                      setState(
+                        () => _mostrarContrasena = !_mostrarContrasena,
+                      );
                     },
                   ),
                 ),
@@ -134,11 +132,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
+                    HapticFeedback.selectionClick();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            const RecuperarContrasenaScreen(),
+                        builder: (context) => const RecuperarContrasenaScreen(),
                       ),
                     );
                   },
@@ -165,9 +163,9 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     '¿No tienes cuenta?',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: AppText.body(color: AppColors.textSecondary),
                   ),
                   TextButton(
                     onPressed: _irARegistro,

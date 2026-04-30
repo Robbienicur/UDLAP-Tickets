@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   static const Color primary = Color(0xFF1F5132);
@@ -49,16 +50,22 @@ class AppTheme {
       outlineVariant: AppColors.divider,
     );
 
+    final baseTextTheme = GoogleFonts.interTextTheme();
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
-      appBarTheme: const AppBarTheme(
+      textTheme: baseTextTheme.apply(
+        bodyColor: AppColors.textPrimary,
+        displayColor: AppColors.textPrimary,
+      ),
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.inter(
           color: AppColors.textPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -70,9 +77,10 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.inter(
             fontSize: 15,
             fontWeight: FontWeight.w600,
+            letterSpacing: 0.1,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -84,9 +92,10 @@ class AppTheme {
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary, width: 1.4),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.inter(
             fontSize: 15,
             fontWeight: FontWeight.w600,
+            letterSpacing: 0.1,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -96,7 +105,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -156,17 +165,21 @@ class AppTheme {
           borderRadius: BorderRadius.circular(4),
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textMuted,
-        selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+        selectedLabelStyle:
+            GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 12),
+        unselectedLabelStyle:
+            GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 12),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.primaryDark,
-        contentTextStyle: const TextStyle(color: Colors.white),
+        contentTextStyle:
+            GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w500),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -174,6 +187,78 @@ class AppTheme {
       ),
     );
   }
+}
+
+class AppText {
+  static TextStyle h1({Color? color}) => GoogleFonts.inter(
+        fontSize: 28,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.5,
+        color: color ?? AppColors.textPrimary,
+        height: 1.15,
+      );
+
+  static TextStyle h2({Color? color}) => GoogleFonts.inter(
+        fontSize: 22,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.3,
+        color: color ?? AppColors.textPrimary,
+        height: 1.2,
+      );
+
+  static TextStyle h3({Color? color}) => GoogleFonts.inter(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: color ?? AppColors.textPrimary,
+      );
+
+  static TextStyle title({Color? color}) => GoogleFonts.inter(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: color ?? AppColors.textPrimary,
+      );
+
+  static TextStyle body({Color? color}) => GoogleFonts.inter(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: color ?? AppColors.textPrimary,
+        height: 1.4,
+      );
+
+  static TextStyle caption({Color? color}) => GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: color ?? AppColors.textSecondary,
+      );
+
+  static TextStyle label({Color? color}) => GoogleFonts.inter(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: color ?? AppColors.textSecondary,
+        letterSpacing: 0.1,
+      );
+
+  static TextStyle priceLarge({Color? color}) => GoogleFonts.inter(
+        fontSize: 32,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -1,
+        color: color ?? AppColors.accentDark,
+      );
+
+  static TextStyle priceMedium({Color? color}) => GoogleFonts.inter(
+        fontSize: 22,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.4,
+        color: color ?? AppColors.accentDark,
+      );
+
+  static TextStyle mono({double size = 14, Color? color}) =>
+      GoogleFonts.jetBrainsMono(
+        fontSize: size,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.5,
+        color: color ?? AppColors.textPrimary,
+      );
 }
 
 class AppButtonStyles {
