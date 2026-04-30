@@ -10,6 +10,9 @@ import '../../theme/app_theme.dart';
 
 import '../../models/boleto.dart';
 import '../../services/api_service.dart';
+import '../tickets/recargar_saldo_screen.dart';
+import '../tickets/historial_screen.dart';
+import 'notificaciones_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool esInvitado;
@@ -214,6 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
         boletos: _misBoletos,
         isLoading: _isLoading,
         onRefresh: _loadBoletos,
+        onTapQR: _showExpandedQR,
         onMarcarUsado: (boleto) async {
           HapticFeedback.lightImpact();
           final success = await _apiService.consumirBoleto(boleto.codigoAlfanumerico);
@@ -226,11 +230,47 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         onComprarPrimero: () => setState(() => _selectedIndex = 0),
       ),
-      _PerfilPage(esInvitado: widget.esInvitado),
+      _PerfilPage(
+        esInvitado: widget.esInvitado,
+        email: _apiService.userEmail,
+        boletos: _misBoletos,
+        onLogout: () async {
+          HapticFeedback.mediumImpact();
+          await _apiService.logout();
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          }
+        },
+      ),
     ];
 
     return Scaffold(
-      body: SafeArea(child: pages[_selectedIndex]),
+      appBar: AppBar(
+        title: Text(
+          _selectedIndex == 0
+              ? 'Inicio'
+              : _selectedIndex == 1
+                  ? 'Mis boletos'
+                  : 'Mi perfil',
+        ),
+        actions: [
+          IconButton(
+            icon: PhosphorIcon(PhosphorIcons.bell()),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificacionesScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -540,6 +580,7 @@ class _MisBoletosPage extends StatelessWidget {
   final List<Boleto> boletos;
   final bool isLoading;
   final VoidCallback onRefresh;
+  final ValueChanged<Boleto> onTapQR;
   final ValueChanged<Boleto> onMarcarUsado;
   final VoidCallback onComprarPrimero;
 
@@ -547,6 +588,7 @@ class _MisBoletosPage extends StatelessWidget {
     required this.boletos,
     required this.isLoading,
     required this.onRefresh,
+    required this.onTapQR,
     required this.onMarcarUsado,
     required this.onComprarPrimero,
   });
@@ -599,6 +641,7 @@ class _MisBoletosPage extends StatelessWidget {
                         itemBuilder: (context, index) {
                           return _PerforatedTicket(
                             boleto: boletos[index],
+                            onTapQR: () => onTapQR(boletos[index]),
                             onMarcarUsado: () => onMarcarUsado(boletos[index]),
                           );
                         },
@@ -689,190 +732,120 @@ class _EmptyState extends StatelessWidget {
 
 class _PerforatedTicket extends StatelessWidget {
   final Boleto boleto;
+  final VoidCallback onTapQR;
   final VoidCallback onMarcarUsado;
 
   const _PerforatedTicket({
     required this.boleto,
+    required this.onTapQR,
     required this.onMarcarUsado,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDisponible = boleto.estado == 'Disponible';
-    final dateStr =
-        DateFormat('dd/MM/yyyy · HH:mm').format(boleto.fechaCompra);
+    final dateStr = DateFormat('dd/MM/yyyy · HH:mm').format(boleto.fechaCompra);
 
-    return ClipPath(
-      clipper: _TicketClipper(notchRadius: 12, notchOffset: 110),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.04),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
+    return Container(
+      decoration: BoxDecoration(
+        color: isDisponible ? AppColors.surface : AppColors.surfaceVariant.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Área del QR
+          GestureDetector(
+            onTap: onTapQR,
+            child: Container(
+              width: 100,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDisponible ? AppColors.primaryContainer.withValues(alpha: 0.3) : Colors.transparent,
+                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: QrImageView(
+                      data: boleto.codigoAlfanumerico,
+                      version: QrVersions.auto,
+                      size: 64,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'VER QR',
+                    style: AppText.caption(color: AppColors.primary).copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 9,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            children: [
-              Container(
-                width: 110,
-                color: AppColors.primaryContainer,
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: QrImageView(
-                        data: boleto.codigoAlfanumerico,
-                        version: QrVersions.auto,
-                        size: 72,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'BOLETO',
-                      style: AppText.caption(color: AppColors.primary)
-                          .copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.5,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              CustomPaint(
-                size: const Size(2, double.infinity),
-                painter: _DashedLinePainter(),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+          ),
+          // Línea divisoria
+          Container(
+            width: 1,
+            height: 80,
+            color: AppColors.divider,
+          ),
+          // Información
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    boleto.codigoAlfanumerico,
+                    style: AppText.mono(size: 13, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
                     children: [
-                      Text(
-                        boleto.codigoAlfanumerico,
-                        style: AppText.mono(size: 13),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          PhosphorIcon(
-                            PhosphorIcons.calendar(),
-                            size: 13,
-                            color: AppColors.textMuted,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              dateStr,
-                              style: AppText.caption(),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _EstadoChip(
-                            estado: boleto.estado,
-                            isDisponible: isDisponible,
-                          ),
-                          const Spacer(),
-                          if (isDisponible)
-                            IconButton(
-                              onPressed: onMarcarUsado,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: PhosphorIcon(
-                                PhosphorIcons.checkCircle(
-                                  PhosphorIconsStyle.fill,
-                                ),
-                                color: AppColors.primary,
-                                size: 24,
-                              ),
-                              tooltip: 'Marcar como usado',
-                            ),
-                        ],
-                      ),
+                      PhosphorIcon(PhosphorIcons.calendar(), size: 12, color: AppColors.textMuted),
+                      const SizedBox(width: 4),
+                      Text(dateStr, style: AppText.caption()),
                     ],
                   ),
+                  const SizedBox(height: 10),
+                  _EstadoChip(estado: boleto.estado, isDisponible: isDisponible),
+                ],
+              ),
+            ),
+          ),
+          // Acción
+          if (isDisponible)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: IconButton(
+                onPressed: onMarcarUsado,
+                icon: PhosphorIcon(
+                  PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
+                  color: AppColors.primary,
+                  size: 28,
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+        ],
       ),
     );
   }
-}
-
-class _TicketClipper extends CustomClipper<Path> {
-  final double notchRadius;
-  final double notchOffset;
-
-  _TicketClipper({required this.notchRadius, required this.notchOffset});
-
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    const r = 16.0;
-    final cx = notchOffset;
-    final cyTop = 0.0;
-    final cyBottom = size.height;
-
-    path.moveTo(r, 0);
-    path.lineTo(cx - notchRadius, 0);
-    path.arcToPoint(
-      Offset(cx + notchRadius, 0),
-      radius: Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    path.lineTo(size.width - r, 0);
-    path.arcToPoint(
-      Offset(size.width, r),
-      radius: const Radius.circular(r),
-    );
-    path.lineTo(size.width, size.height - r);
-    path.arcToPoint(
-      Offset(size.width - r, size.height),
-      radius: const Radius.circular(r),
-    );
-    path.lineTo(cx + notchRadius, size.height);
-    path.arcToPoint(
-      Offset(cx - notchRadius, size.height),
-      radius: Radius.circular(notchRadius),
-      clockwise: false,
-    );
-    path.lineTo(r, size.height);
-    path.arcToPoint(
-      Offset(0, size.height - r),
-      radius: const Radius.circular(r),
-    );
-    path.lineTo(0, r);
-    path.arcToPoint(Offset(r, 0), radius: const Radius.circular(r));
-    path.close();
-
-    // suppress unused-field warning when zero
-    if (cyTop > 0 || cyBottom < 0) path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 class _DashedLinePainter extends CustomPainter {
@@ -936,12 +909,20 @@ class _EstadoChip extends StatelessWidget {
 
 class _PerfilPage extends StatelessWidget {
   final bool esInvitado;
+  final String? email;
+  final List<Boleto> boletos;
+  final VoidCallback onLogout;
 
-  const _PerfilPage({required this.esInvitado});
+  const _PerfilPage({
+    required this.esInvitado,
+    this.email,
+    required this.boletos,
+    required this.onLogout,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -976,12 +957,12 @@ class _PerfilPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        esInvitado ? 'Invitado' : 'Estudiante UDLAP',
+                        esInvitado ? 'Invitado' : ((email?.split('@').first ?? 'ESTUDIANTE').toUpperCase()),
                         style: AppText.title(),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        esInvitado ? 'Sesión de invitado' : 'correo@udlap.mx',
+                        esInvitado ? 'Sesión de invitado' : (email ?? 'correo@udlap.mx'),
                         style: AppText.caption(),
                       ),
                     ],
@@ -990,7 +971,37 @@ class _PerfilPage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 24),
+          Text('Cuenta', style: AppText.label(color: AppColors.textSecondary)),
+          const SizedBox(height: 12),
+          _PerfilTile(
+            icon: PhosphorIcons.wallet(),
+            title: 'Recargar saldo',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RecargarSaldoScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+          _PerfilTile(
+            icon: PhosphorIcons.clockCounterClockwise(),
+            title: 'Historial de compras',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HistorialScreen(boletos: boletos),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          Text('Aplicación', style: AppText.label(color: AppColors.textSecondary)),
+          const SizedBox(height: 12),
           _PerfilTile(
             icon: PhosphorIcons.fileText(),
             title: 'Términos y condiciones',
@@ -1010,19 +1021,11 @@ class _PerfilPage extends StatelessWidget {
               'Aquí irá la sección de ayuda y preguntas frecuentes.',
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 32),
           SizedBox(
             height: 52,
             child: OutlinedButton.icon(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LoginScreen(),
-                  ),
-                );
-              },
+              onPressed: onLogout,
               icon: PhosphorIcon(
                 PhosphorIcons.signOut(PhosphorIconsStyle.bold),
                 size: 18,
