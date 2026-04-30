@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -211,15 +210,12 @@ class _InicioPage extends StatelessWidget {
                 ),
               ),
             ],
-          ).animate().fadeIn(duration: 350.ms).slideY(begin: -0.1, end: 0),
+          ),
           const SizedBox(height: 20),
           _ResumenCard(
             disponibles: boletosDisponibles,
             onVerBoletos: onIrAMisBoletos,
-          ).animate(delay: 100.ms).fadeIn(duration: 400.ms).slideY(
-                begin: 0.1,
-                end: 0,
-              ),
+          ),
           const SizedBox(height: 24),
           Text('Comprar boletos', style: AppText.h2()),
           const SizedBox(height: 6),
@@ -288,10 +284,7 @@ class _InicioPage extends StatelessWidget {
                 ),
               ],
             ),
-          ).animate(delay: 200.ms).fadeIn(duration: 400.ms).slideY(
-                begin: 0.1,
-                end: 0,
-              ),
+          ),
         ],
       ),
     );
@@ -469,12 +462,8 @@ class _MisBoletosPage extends StatelessWidget {
                         itemBuilder: (context, index) {
                           return _PerforatedTicket(
                             boleto: boletos[index],
-                            onMarcarUsado: () =>
-                                onMarcarUsado(boletos[index]),
-                          )
-                              .animate(delay: (index * 60).ms)
-                              .fadeIn(duration: 350.ms)
-                              .slideY(begin: 0.08, end: 0);
+                            onMarcarUsado: () => onMarcarUsado(boletos[index]),
+                          );
                         },
                       ),
           ),
@@ -533,10 +522,7 @@ class _EmptyState extends StatelessWidget {
               size: 44,
               color: AppColors.primary,
             ),
-          ).animate().fadeIn(duration: 400.ms).scale(
-                begin: const Offset(0.8, 0.8),
-                end: const Offset(1, 1),
-              ),
+          ),
           const SizedBox(height: 18),
           Text('No tienes boletos', style: AppText.h3()),
           const SizedBox(height: 6),
@@ -864,7 +850,7 @@ class _PerfilPage extends StatelessWidget {
                 ),
               ],
             ),
-          ).animate().fadeIn(duration: 350.ms).slideY(begin: 0.05, end: 0),
+          ),
           const SizedBox(height: 18),
           _PerfilTile(
             icon: PhosphorIcons.fileText(),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'pago_tarjeta_screen.dart';
 import 'saldo_screen.dart';
@@ -33,14 +32,9 @@ class ConfirmacionScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _ResumenCard(cantidad: cantidadBoletos, total: total)
-                  .animate()
-                  .fadeIn(duration: 400.ms)
-                  .slideY(begin: -0.05, end: 0),
+              _ResumenCard(cantidad: cantidadBoletos, total: total),
               const SizedBox(height: 24),
-              Text('Método de pago', style: AppText.title())
-                  .animate(delay: 100.ms)
-                  .fadeIn(duration: 350.ms),
+              Text('Método de pago', style: AppText.title()),
               const SizedBox(height: 12),
               _MetodoPagoTile(
                 icon: PhosphorIcons.creditCard(),
@@ -58,10 +52,7 @@ class ConfirmacionScreen extends StatelessWidget {
                     Navigator.pop(context, true);
                   }
                 },
-              ).animate(delay: 150.ms).fadeIn(duration: 350.ms).slideX(
-                    begin: 0.05,
-                    end: 0,
-                  ),
+              ),
               const SizedBox(height: 10),
               _MetodoPagoTile(
                 icon: PhosphorIcons.wallet(),
@@ -81,10 +72,7 @@ class ConfirmacionScreen extends StatelessWidget {
                     Navigator.pop(context, true);
                   }
                 },
-              ).animate(delay: 200.ms).fadeIn(duration: 350.ms).slideX(
-                    begin: 0.05,
-                    end: 0,
-                  ),
+              ),
               const SizedBox(height: 10),
               _MetodoPagoTile(
                 icon: PhosphorIcons.dotsThree(PhosphorIconsStyle.bold),
@@ -105,10 +93,7 @@ class ConfirmacionScreen extends StatelessWidget {
                     Navigator.pop(context, true);
                   }
                 },
-              ).animate(delay: 250.ms).fadeIn(duration: 350.ms).slideX(
-                    begin: 0.05,
-                    end: 0,
-                  ),
+              ),
               const Spacer(),
               SizedBox(
                 height: 48,

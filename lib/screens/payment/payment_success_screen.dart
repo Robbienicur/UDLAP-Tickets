@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../theme/app_theme.dart';
 
@@ -46,30 +45,15 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                   color: AppColors.primary,
                   size: 64,
                 ),
-              )
-                  .animate()
-                  .scale(
-                    duration: 500.ms,
-                    curve: Curves.elasticOut,
-                    begin: const Offset(0.4, 0.4),
-                    end: const Offset(1, 1),
-                  )
-                  .then()
-                  .shimmer(
-                    duration: 1200.ms,
-                    color: Colors.white.withValues(alpha: 0.6),
-                  ),
+              ),
               const SizedBox(height: 32),
-              Text('¡Pago exitoso!', style: AppText.h1())
-                  .animate(delay: 200.ms)
-                  .fadeIn(duration: 400.ms)
-                  .slideY(begin: 0.2, end: 0),
+              Text('¡Pago exitoso!', style: AppText.h1()),
               const SizedBox(height: 12),
               Text(
                 'Tu pago se ha realizado correctamente.\nYa puedes ver tus boletos.',
                 textAlign: TextAlign.center,
                 style: AppText.body(color: AppColors.textSecondary),
-              ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
+              ),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
@@ -81,10 +65,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                   },
                   child: const Text('Continuar'),
                 ),
-              ).animate(delay: 500.ms).fadeIn(duration: 400.ms).slideY(
-                    begin: 0.3,
-                    end: 0,
-                  ),
+              ),
               const SizedBox(height: 16),
             ],
           ),
