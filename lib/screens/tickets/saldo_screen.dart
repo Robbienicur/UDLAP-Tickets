@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'recargar_saldo_screen.dart';
+import '../../services/api_service.dart';
 
 class SaldoScreen extends StatelessWidget {
   final int cantidadBoletos;
@@ -8,7 +9,8 @@ class SaldoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double saldoDisponible = 150.00;
+    final apiService = ApiService();
+    double saldoDisponible = apiService.saldo;
     double precioBoleto = 25.00;
     double saldoExigible = cantidadBoletos * precioBoleto;
     double saldoRestante = saldoDisponible - saldoExigible;
@@ -101,13 +103,14 @@ class SaldoScreen extends StatelessWidget {
                   const SizedBox(width: 15),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context, true);
-                      },
+                      onPressed: saldoRestante >= 0 
+                        ? () => Navigator.pop(context, true)
+                        : null,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15),
+                        backgroundColor: saldoRestante >= 0 ? Colors.blue : Colors.grey,
                       ),
-                      child: const Text('Pagar'),
+                      child: Text(saldoRestante >= 0 ? 'Pagar' : 'Saldo Insuficiente'),
                     ),
                   ),
                 ],

@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/boleto.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   static const String baseUrl = 'http://localhost:8001/api';
   String? _token;
+  String? _userEmail;
+  double _saldo = 0.0;
 
   // Singleton pattern
   factory ApiService() {
@@ -13,6 +16,10 @@ class ApiService {
   }
 
   ApiService._internal();
+
+  String? get token => _token;
+  String? get userEmail => _userEmail;
+  double get saldo => _saldo;
 
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
@@ -51,8 +58,16 @@ class ApiService {
         body: json.encode({'cantidad': cantidad}),
         headers: _headers,
       );
-      print('DEBUG API: POST comprar - Status: ${response.statusCode}');
-      return response.statusCode == 201;
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        if (data['nuevo_saldo'] != null) {
+          _saldo = (data['nuevo_saldo'] as num).toDouble();
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setDouble('saldo', _saldo);
+        }
+        return true;
+      }
+      return false;
     } catch (e) {
       print('Error en comprarBoletos: $e');
       return false;
@@ -67,11 +82,9 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
       );
       
-      print('DEBUG API: POST login - Status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        _token = data['token'];
-        print('DEBUG API: Token recibido y guardado');
+        await _saveSession(data);
         return true;
       }
       return false;
@@ -81,8 +94,84 @@ class ApiService {
     }
   }
 
-  void logout() {
+  Future<bool> register(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register/'),
+        body: json.encode({'email': email, 'password': password}),
+        headers: {'Content-Type': 'application/json'},
+      );
+      
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        await _saveSession(data);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error en register: $e');
+      return false;
+    }
+  }
+
+  Future<void> _saveSession(Map<String, dynamic> data) async {
+    _token = data['token'];
+    _userEmail = data['email'];
+    _saldo = (data['saldo'] as num).toDouble();
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', _token!);
+    await prefs.setString('email', _userEmail!);
+    await prefs.setDouble('saldo', _saldo);
+  }
+
+  Future<bool> loadSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('token');
+    _userEmail = prefs.getString('email');
+    _saldo = prefs.getDouble('saldo') ?? 0.0;
+    return _token != null;
+  }
+
+  Future<bool> resetPassword(String email, {String? newPassword, bool checkOnly = false}) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/reset-password/'),
+        body: json.encode({
+          'email': email,
+          'new_password': newPassword,
+          'check_only': checkOnly,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error en resetPassword: $e');
+      return false;
+    }
+  }
+
+  Future<bool> consumirBoleto(String codigo) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/boletos/consumir/'),
+        body: json.encode({'codigo': codigo}),
+        headers: _headers,
+      );
+      print('DEBUG API: POST consumir - Status: ${response.statusCode}');
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error en consumirBoleto: $e');
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
     print('DEBUG API: Logout - Limpiando token');
     _token = null;
+    _userEmail = null;
+    _saldo = 0.0;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 }

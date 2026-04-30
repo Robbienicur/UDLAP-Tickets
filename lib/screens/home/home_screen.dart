@@ -26,6 +26,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _checkSessionAndLoad();
+  }
+
+  Future<void> _checkSessionAndLoad() async {
+    final hasSession = await _apiService.loadSession();
+    if (!hasSession && !widget.esInvitado) {
+      // Si no hay sesión y no es invitado, redirigir al login (opcional)
+    }
     _loadBoletos();
   }
 
@@ -36,11 +44,101 @@ class _HomeScreenState extends State<HomeScreen> {
     
     final boletos = await _apiService.getBoletos();
     
+    // Clasificar y ordenar boletos
+    final disponibles = boletos.where((b) => b.estado == 'Disponible').toList();
+    final usados = boletos.where((b) => b.estado == 'Usado').toList();
+    
+    // Los disponibles más nuevos primero
+    disponibles.sort((a, b) => b.fechaCompra.compareTo(a.fechaCompra));
+    // Los usados después, también por fecha descendente
+    usados.sort((a, b) => b.fechaCompra.compareTo(a.fechaCompra));
+    
     setState(() {
       _misBoletos.clear();
-      _misBoletos.addAll(boletos);
+      _misBoletos.addAll(disponibles);
+      _misBoletos.addAll(usados);
       _isLoading = false;
     });
+  }
+
+  void _showExpandedQR(Boleto boleto) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Código QR',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                const SizedBox(height: 10),
+                QrImageView(
+                  data: boleto.codigoAlfanumerico,
+                  version: QrVersions.auto,
+                  size: 280.0,
+                  backgroundColor: Colors.white,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  boleto.codigoAlfanumerico,
+                  style: const TextStyle(
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Chip(
+                  label: Text(boleto.estado),
+                  backgroundColor: boleto.estado == 'Disponible' ? Colors.green[100] : Colors.grey[300],
+                ),
+                if (boleto.estado == 'Disponible') ...[
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final success = await _apiService.consumirBoleto(boleto.codigoAlfanumerico);
+                        if (success && context.mounted) {
+                          Navigator.of(dialogContext).pop(); // Cerrar diálogo
+                          _loadBoletos(); // Recargar lista
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Boleto consumido exitosamente')),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.check_circle),
+                      label: const Text('Consumir Boleto'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   int get _cantidadDisponibles =>
@@ -65,6 +163,25 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Indicador de Saldo en Inicio
+          Container(
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Tu Saldo:', style: TextStyle(fontSize: 16)),
+                Text(
+                  '\$${_apiService.saldo.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 20),
@@ -165,68 +282,80 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 20),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.person, size: 40),
-              title: Text(widget.esInvitado ? 'Invitado' : 'Estudiante UDLAP'),
-              subtitle: Text(widget.esInvitado
-                  ? 'Sesión de invitado'
-                  : 'correo@udlap.mx'),
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.blue,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                  title: Text(widget.esInvitado ? 'Invitado' : (_apiService.userEmail?.split('@')[0] ?? 'Estudiante')),
+                  subtitle: Text(widget.esInvitado
+                      ? 'Sesión de invitado'
+                      : (_apiService.userEmail ?? 'Sin correo')),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Saldo Disponible:', style: TextStyle(fontSize: 16)),
+                      Text(
+                        '\$${_apiService.saldo.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+          const SizedBox(height: 25),
+          const Text(
+            'Actividad Reciente',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: _misBoletos.isEmpty 
+              ? const Center(child: Text('Sin actividad reciente'))
+              : ListView.builder(
+                  itemCount: _misBoletos.length > 5 ? 5 : _misBoletos.length,
+                  itemBuilder: (context, index) {
+                    final b = _misBoletos[index];
+                    return ListTile(
+                      dense: true,
+                      leading: Icon(
+                        b.estado == 'Disponible' ? Icons.add_circle_outline : Icons.check_circle,
+                        color: b.estado == 'Disponible' ? Colors.green : Colors.grey,
+                      ),
+                      title: Text(b.estado == 'Disponible' ? 'Compra de Boleto' : 'Boleto Consumido'),
+                      subtitle: Text(DateFormat('dd/MM HH:mm').format(b.fechaCompra)),
+                      trailing: Text(b.estado == 'Disponible' ? '-\$25.00' : 'Usado'),
+                    );
+                  },
+                ),
+          ),
           const SizedBox(height: 20),
-          ListTile(
-            leading: const Icon(Icons.description),
-            title: const Text('Términos y Condiciones'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Términos y Condiciones'),
-                  content: const Text(
-                      'Aquí irán los términos y condiciones de uso de la aplicación.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cerrar'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.help_outline),
-            title: const Text('Ayuda'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Ayuda'),
-                  content: const Text(
-                      'Aquí irá la sección de ayuda y preguntas frecuentes.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cerrar'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          const Spacer(),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                _apiService.logout();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const LoginScreen()),
-                );
+              onPressed: () async {
+                await _apiService.logout();
+                if (mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -265,12 +394,21 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          _isLoading
-              ? const SizedBox.shrink()
-              : Text(
-                  'Tienes: $_cantidadDisponibles disponibles',
-                  style: const TextStyle(fontSize: 18),
-                ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _isLoading
+                  ? const SizedBox.shrink()
+                  : Text(
+                      '$_cantidadDisponibles Disponibles',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+              Text(
+                'Saldo: \$${_apiService.saldo.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 16, color: Colors.blue, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
           const SizedBox(height: 15),
           Expanded(
             child: _isLoading
@@ -303,6 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             elevation: 4,
+                            color: isDisponible ? Colors.white : Colors.grey[200],
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
@@ -311,16 +450,21 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Row(
                                 children: [
                                   // QR Code
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    padding: const EdgeInsets.all(5),
-                                    child: QrImageView(
-                                      data: boleto.codigoAlfanumerico,
-                                      version: QrVersions.auto,
-                                      size: 80.0,
+                                  InkWell(
+                                    onTap: () => _showExpandedQR(boleto),
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border.all(color: Colors.grey[300]!),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.all(5),
+                                      child: QrImageView(
+                                        data: boleto.codigoAlfanumerico,
+                                        version: QrVersions.auto,
+                                        size: 80.0,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 15),
@@ -354,7 +498,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           decoration: BoxDecoration(
                                             color: isDisponible
                                                 ? Colors.green[100]
-                                                : Colors.grey[200],
+                                                : Colors.grey[400],
                                             borderRadius:
                                                 BorderRadius.circular(5),
                                           ),
@@ -363,7 +507,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             style: TextStyle(
                                               color: isDisponible
                                                   ? Colors.green[800]
-                                                  : Colors.grey[800],
+                                                  : Colors.white,
                                               fontWeight: FontWeight.bold,
                                               fontSize: 12,
                                             ),
@@ -374,10 +518,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   if (isDisponible)
                                     IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          boleto.estado = 'Usado';
-                                        });
+                                      onPressed: () async {
+                                        final success = await _apiService.consumirBoleto(boleto.codigoAlfanumerico);
+                                        if (success) {
+                                          _loadBoletos();
+                                        }
                                       },
                                       icon: const Icon(Icons.check_circle_outline),
                                       color: Colors.blue,
@@ -394,6 +539,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
+
 
 class RecuperarContrasenaScreen extends StatefulWidget {
   const RecuperarContrasenaScreen({super.key});
@@ -13,11 +15,11 @@ class _RecuperarContrasenaScreenState
   final TextEditingController _correoController = TextEditingController();
   final TextEditingController _codigoController = TextEditingController();
 
+  final _apiService = ApiService();
   bool _codigoEnviado = false;
   String _mensajeExito = '';
   String _mensajeError = '';
 
-  static const String _correoRegistrado = 'estudiante@udlap.mx';
   static const String _codigoCorrecto = '123';
 
   @override
@@ -69,26 +71,21 @@ class _RecuperarContrasenaScreenState
       return;
     }
 
-    if (correo != _correoRegistrado) {
+    await _mostrarCarga('Verificando correo');
+
+    final emailExists = await _apiService.resetPassword(correo, checkOnly: true);
+    print('DEBUG RESET: Correo $correo existe? $emailExists');
+
+    if (!emailExists) {
       setState(() {
         _mensajeError = 'Error: Dirección de correo no registrada.';
       });
       return;
     }
 
-    if (_codigoEnviado) {
-      setState(() {
-        _mensajeError =
-            'Error: Ya se ha enviado un código a la dirección proporcionada, para volver a enviar use el botón "Reenviar código".';
-      });
-      return;
-    }
-
-    await _mostrarCarga('Redirigiendo');
-
     setState(() {
       _codigoEnviado = true;
-      _mensajeExito = 'Se ha enviado el código';
+      _mensajeExito = 'Se ha enviado el código (Demo: 123)';
     });
   }
 
@@ -109,7 +106,8 @@ class _RecuperarContrasenaScreenState
       return;
     }
 
-    if (correo != _correoRegistrado) {
+    final emailExists = await _apiService.resetPassword(correo, checkOnly: true);
+    if (!emailExists) {
       setState(() {
         _mensajeError = 'Error: Dirección de correo no registrada.';
       });
@@ -149,7 +147,8 @@ class _RecuperarContrasenaScreenState
       return;
     }
 
-    if (correo != _correoRegistrado) {
+    final emailExists = await _apiService.resetPassword(correo, checkOnly: true);
+    if (!emailExists) {
       setState(() {
         _mensajeError = 'Error: Dirección de correo no registrada.';
       });
@@ -414,6 +413,7 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
   final TextEditingController _nuevaController = TextEditingController();
   final TextEditingController _confirmarController = TextEditingController();
 
+  final _apiService = ApiService();
   String _mensajeError = '';
 
   @override
@@ -475,7 +475,17 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
       return;
     }
 
-    await _mostrarCarga('Generando\ncontraseña');
+    await _mostrarCarga('Actualizando contraseña');
+
+    final success = await _apiService.resetPassword(widget.correo, newPassword: nueva);
+    print('DEBUG RESET: Actualización de $widget.correo exitosa? $success');
+
+    if (!success) {
+      setState(() {
+        _mensajeError = 'Error al actualizar contraseña. Intente más tarde.';
+      });
+      return;
+    }
 
     if (!mounted) return;
 
