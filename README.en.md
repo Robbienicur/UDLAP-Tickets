@@ -26,6 +26,7 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+[![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com)
 [![Material Design](https://img.shields.io/badge/Material%20Design%203-757575?style=for-the-badge&logo=materialdesign&logoColor=white)](https://m3.material.io)
 
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=flat-square&logo=android&logoColor=white)](#)
@@ -45,9 +46,10 @@
 - [Architecture](#-architecture)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running the App](#running-the-app)
+  - [Backend Setup](#backend-setup)
+  - [App Setup](#app-setup)
 - [Project Structure](#-project-structure)
+- [REST API](#-rest-api)
 - [App Flow](#-app-flow)
 - [Team](#-team)
 - [License](#-license)
@@ -56,7 +58,7 @@
 
 ## 🎯 About the Project
 
-**UDLAP Tickets** is a mobile application built with Flutter that modernizes the parking access system at Universidad de las Américas Puebla. The app allows students and university staff to purchase and manage digital parking tickets quickly, securely, and without the need for physical tickets.
+**UDLAP Tickets** is a full-stack platform that modernizes the parking access system at Universidad de las Américas Puebla. The solution combines a Flutter mobile app with a Django REST Framework backend so students and university staff can purchase and manage digital parking tickets quickly, securely, and without the need for physical tickets.
 
 ### Why UDLAP Tickets?
 
@@ -66,6 +68,7 @@
 | Physical tickets that get lost | Digital tickets always available |
 | No flexible payment options | Pay with card or rechargeable balance |
 | No purchase history | Full transaction history |
+| Slow validation at the gate | QR codes scannable on the spot |
 
 ---
 
@@ -78,15 +81,17 @@
 ### 🔐 Authentication
 - Login with institutional email
 - New user registration
-- Guest access
+- Password recovery with verification code
+- Persistent session with auto-login
 
 </td>
 <td width="50%">
 
 ### 🎫 Ticket Management
-- Select ticket quantity
-- View active tickets
-- Purchase history
+- Buy tickets with balance deduction
+- View active and used tickets
+- QR code generated per ticket
+- Purchase and consumption history
 
 </td>
 </tr>
@@ -104,7 +109,8 @@
 ### 👤 User Profile
 - Personal information
 - Real-time available balance
-- Account management
+- Activity notifications
+- Secure logout
 
 </td>
 </tr>
@@ -114,20 +120,26 @@
 
 ## 🏗 Architecture
 
-The application follows a **screen-based** architecture with imperative navigation using `Navigator`:
+The platform is split into two components that live in this monorepo:
 
 ```
-lib/
-├── main.dart                          # Entry point
-└── screens/
-    ├── login_screen.dart              # Login
-    ├── registro_screen.dart           # User registration
-    ├── home_screen.dart               # Main screen with navigation
-    ├── confirmacion_screen.dart       # Purchase confirmation
-    ├── pago_tarjeta_screen.dart       # Card payment form
-    ├── saldo_screen.dart              # Balance screen
-    └── recargar_saldo_screen.dart     # Balance top-up (barcode)
+┌──────────────────────────┐         HTTPS / JSON         ┌──────────────────────────┐
+│                          │ ◀─────────────────────────▶  │                          │
+│   Flutter App            │   Token Authentication       │   Django REST Backend    │
+│   (Android / iOS / Web)  │                              │   (api_tickets)          │
+│                          │                              │                          │
+└──────────────────────────┘                              └────────────┬─────────────┘
+                                                                       │
+                                                                       ▼
+                                                          ┌──────────────────────────┐
+                                                          │   SQLite (development)   │
+                                                          │   PostgreSQL (production)│
+                                                          └──────────────────────────┘
 ```
+
+- **Frontend (Flutter):** screen-based architecture with `Navigator` and a singleton `ApiService` to talk to the backend. Local persistence via `shared_preferences`.
+- **Backend (Django):** REST API with Token Authentication, `Boleto` and `PerfilUsuario` models, and endpoints for registration, login, password recovery, and ticket purchase/consumption.
+- **Configuration:** sensitive values (`SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, CORS) are read from environment variables; see `.env.example`.
 
 ---
 
@@ -135,46 +147,61 @@ lib/
 
 ### Prerequisites
 
-Make sure you have the following installed:
-
 | Tool | Minimum Version | Installation |
-|------|----------------|-------------|
+|------|-----------------|--------------|
 | Flutter SDK | 3.10+ | [flutter.dev/get-started](https://docs.flutter.dev/get-started/install) |
 | Dart SDK | 3.10.4+ | Included with Flutter |
-| Android Studio / Xcode | Latest stable | [developer.android.com](https://developer.android.com/studio) / App Store |
+| Python | 3.10+ | [python.org/downloads](https://www.python.org/downloads/) |
+| Android Studio / Xcode | Latest stable | [developer.android.com](https://developer.android.com/studio) |
 
-> **Tip:** Verify your setup by running `flutter doctor` in the terminal.
+> **Tip:** Verify your Flutter setup by running `flutter doctor`.
 
-### Installation
+### Backend Setup
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/Robbienicur/UDLAP-Tickets.git
-
-# 2. Navigate to the project directory
 cd UDLAP-Tickets
 
+# 2. Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate          # macOS / Linux
+# venv\Scripts\activate           # Windows
+
 # 3. Install dependencies
-flutter pub get
+pip install django djangorestframework django-cors-headers
+
+# 4. Configure environment variables
+cp .env.example .env              # edit values per environment
+
+# 5. Apply migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# 6. Start the server on port 8001
+python manage.py runserver 8001
 ```
 
-### Running the App
+> **Important:** the Flutter client expects the backend on port **8001** by default. To change it, pass `--dart-define=API_BASE_URL=...` when running the app.
+
+### App Setup
 
 ```bash
+# From the repo root
+flutter pub get
+
 # Run in debug mode
 flutter run
 
-# Run on a specific device
-flutter run -d chrome      # Web
-flutter run -d android     # Android
-flutter run -d ios         # iOS
+# Point to a specific backend
+flutter run --dart-define=API_BASE_URL=http://192.168.1.10:8001/api
 ```
 
 <details>
 <summary><strong>🔧 Additional useful commands</strong></summary>
 
 ```bash
-# Analyze the code
+# Analyze Flutter code
 flutter analyze
 
 # Run tests
@@ -185,6 +212,9 @@ flutter build apk --release
 
 # Build for iOS
 flutter build ios --release
+
+# Validate Django configuration
+python manage.py check
 ```
 
 </details>
@@ -195,20 +225,49 @@ flutter build ios --release
 
 ```
 UDLAP-Tickets/
-├── 📂 android/               # Android native configuration
-├── 📂 ios/                    # iOS native configuration
-├── 📂 lib/                    # Main source code
-│   ├── 📄 main.dart           # Application entry point
-│   └── 📂 screens/            # Application screens
-├── 📂 linux/                  # Linux support
-├── 📂 macos/                  # macOS support
-├── 📂 web/                    # Web support
-├── 📂 windows/                # Windows support
-├── 📂 test/                   # Unit and widget tests
-├── 📄 pubspec.yaml            # Dependencies and configuration
-├── 📄 analysis_options.yaml   # Code analysis rules
-└── 📄 README.md               # Documentation
+├── 📂 api_tickets/              # Django app with business logic
+│   ├── models.py                # Boleto, PerfilUsuario
+│   ├── views.py                 # REST endpoints
+│   ├── urls.py                  # API routes
+│   └── serializers.py
+├── 📂 backend_tickets/          # Django project configuration
+│   ├── settings.py              # Reads environment variables
+│   ├── urls.py
+│   └── wsgi.py
+├── 📂 lib/                      # Flutter source code
+│   ├── 📄 main.dart             # Entry point
+│   ├── 📂 models/               # Data models (Boleto)
+│   ├── 📂 screens/              # Application screens
+│   │   ├── auth/                # Login, register, recovery
+│   │   ├── home/                # Main screen and notifications
+│   │   └── tickets/             # Balance, history, top-up
+│   ├── 📂 services/             # ApiService (HTTP client)
+│   └── 📂 theme/                # UDLAP palette and typography
+├── 📂 android/ ios/ web/        # Native configuration per platform
+├── 📂 test/                     # Widget tests
+├── 📄 manage.py                 # Django entry point
+├── 📄 .env.example              # Environment variable template
+├── 📄 pubspec.yaml              # Flutter dependencies
+└── 📄 README.md
 ```
+
+---
+
+## 🌐 REST API
+
+Development base URL: `http://localhost:8001/api`
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/auth/register/` | Create a new account | No |
+| `POST` | `/auth/login/` | Sign in and obtain token | No |
+| `POST` | `/auth/request-reset/` | Request a password recovery code | No |
+| `POST` | `/auth/reset-password/` | Confirm a new password with the code | No |
+| `GET` | `/boletos/` | List the user's tickets | Yes |
+| `POST` | `/boletos/comprar/` | Buy tickets (deducts balance) | Yes |
+| `POST` | `/boletos/consumir/` | Mark a ticket as used | Yes |
+
+Authentication uses the `Authorization: Token <key>` header. The recovery code expires after 10 minutes.
 
 ---
 
@@ -219,6 +278,12 @@ UDLAP-Tickets/
 │   Login /   │────▶│    Home      │────▶│    Purchase      │
 │  Register   │     │  (Tickets)   │     │   Confirmation   │
 └─────────────┘     └──────────────┘     └──────────────────┘
+                            │                     │
+                            ▼                     │
+                    ┌──────────────┐              │
+                    │  My Tickets  │              │
+                    │  (QR + use)  │              │
+                    └──────────────┘              │
                                                   │
                           ┌───────────────────────┼───────────────────┐
                           ▼                       ▼                   ▼
