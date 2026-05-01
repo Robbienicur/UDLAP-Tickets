@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'recargar_saldo_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
 
 class SaldoScreen extends StatelessWidget {
   final int cantidadBoletos;
@@ -11,7 +12,8 @@ class SaldoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double saldoDisponible = 150.00;
+    final apiService = ApiService();
+    final double saldoDisponible = apiService.saldo;
     const double precioBoleto = 25.00;
     final double saldoExigible = cantidadBoletos * precioBoleto;
     final double saldoRestante = saldoDisponible - saldoExigible;
@@ -63,9 +65,9 @@ class SaldoScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      '\$150.00',
-                      style: TextStyle(
+                    Text(
+                      '\$${saldoDisponible.toStringAsFixed(2)}',
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
@@ -145,7 +147,7 @@ class SaldoScreen extends StatelessWidget {
                                 Navigator.pop(context, true);
                               }
                             : null,
-                        child: const Text('Pagar'),
+                        child: Text(suficiente ? 'Pagar' : 'Saldo Insuficiente'),
                       ),
                     ),
                   ),

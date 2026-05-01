@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'registro_screen.dart';
 import '../home/home_screen.dart';
 import 'recuperar_contraseña.dart';
+import '../../services/api_service.dart';
 import '../../theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _correoController = TextEditingController();
   final _contrasenaController = TextEditingController();
+  final _apiService = ApiService();
+  bool _isLoading = false;
   bool _mostrarContrasena = false;
 
   @override
@@ -25,12 +28,31 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _iniciarSesion() {
+  Future<void> _iniciarSesion() async {
     HapticFeedback.mediumImpact();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+    setState(() {
+      _isLoading = true;
+    });
+
+    final success = await _apiService.login(
+      _correoController.text,
+      _contrasenaController.text,
     );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error de inicio de sesión. Verifique sus credenciales.')),
+      );
+    }
   }
 
   void _irARegistro() {
@@ -147,8 +169,17 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _iniciarSesion,
-                  child: const Text('Iniciar sesión'),
+                  onPressed: _isLoading ? null : _iniciarSesion,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Iniciar sesión'),
                 ),
               ),
               const SizedBox(height: 14),

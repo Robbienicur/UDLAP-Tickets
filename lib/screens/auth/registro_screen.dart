@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../home/home_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../services/api_service.dart';
 
 class RegistroScreen extends StatefulWidget {
   const RegistroScreen({super.key});
@@ -12,13 +13,15 @@ class RegistroScreen extends StatefulWidget {
 }
 
 class _RegistroScreenState extends State<RegistroScreen> {
-  final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _apellidoController = TextEditingController();
   final _correoController = TextEditingController();
   final _contrasenaController = TextEditingController();
   final _confirmarController = TextEditingController();
-
+  final _formKey = GlobalKey<FormState>();
+  
+  final _apiService = ApiService();
+  bool _isLoading = false;
   bool _mostrarContrasena = false;
   bool _mostrarConfirmacion = false;
 
@@ -65,11 +68,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
   @override
   void dispose() {
-    _nombreController.removeListener(_actualizarUI);
-    _apellidoController.removeListener(_actualizarUI);
-    _correoController.removeListener(_actualizarUI);
-    _contrasenaController.removeListener(_actualizarUI);
-    _confirmarController.removeListener(_actualizarUI);
     _nombreController.dispose();
     _apellidoController.dispose();
     _correoController.dispose();
@@ -78,21 +76,34 @@ class _RegistroScreenState extends State<RegistroScreen> {
     super.dispose();
   }
 
-  void _registrarse() {
-    final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Revisa los campos para continuar.'),
-        ),
-      );
-      return;
-    }
+  Future<void> _registrarse() async {
+    if (!_formKey.currentState!.validate()) return;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+    setState(() {
+      _isLoading = true;
+    });
+
+    final success = await _apiService.register(
+      _correoController.text,
+      _contrasenaController.text,
     );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success && mounted) {
+      HapticFeedback.mediumImpact();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (route) => false,
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al registrar usuario. Intente con otro correo.')),
+      );
+    }
   }
 
   @override
@@ -316,11 +327,17 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         child: SizedBox(
                           height: 52,
                           child: ElevatedButton(
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              _registrarse();
-                            },
-                            child: const Text('Registrarme'),
+                            onPressed: _isLoading ? null : _registrarse,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Registrarme'),
                           ),
                         ),
                       ),
