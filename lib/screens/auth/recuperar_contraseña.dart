@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../theme/app_theme.dart';
@@ -20,8 +21,6 @@ class _RecuperarContrasenaScreenState
   bool _codigoEnviado = false;
   String _mensajeExito = '';
   String _mensajeError = '';
-
-  static const String _codigoCorrecto = '123';
 
   @override
   void dispose() {
@@ -55,70 +54,44 @@ class _RecuperarContrasenaScreenState
     _mensajeError = '';
   }
 
-  Future<void> _enviarCodigo() async {
+  Future<void> _solicitarCodigo({bool reenviando = false}) async {
     FocusScope.of(context).unfocus();
     final correo = _correoController.text.trim();
     setState(_limpiarMensajes);
 
     if (correo.isEmpty) {
       setState(() {
-        _mensajeError =
-            'Antes de enviar el código debe proporcionar su correo institucional.';
+        _mensajeError = reenviando
+            ? 'Proporciona tu correo institucional antes de reenviar el código.'
+            : 'Antes de enviar el código debe proporcionar su correo institucional.';
       });
       return;
     }
 
-    await _mostrarCarga('Verificando correo');
+    await _mostrarCarga(reenviando ? 'Reenviando código' : 'Enviando código');
 
-    final emailExists = await _apiService.resetPassword(correo, checkOnly: true);
-    print('DEBUG RESET: Correo $correo existe? $emailExists');
+    final result = await _apiService.requestPasswordReset(correo);
+    if (!mounted) return;
 
-    if (!emailExists) {
+    if (!result.ok) {
       setState(() {
-        _mensajeError = 'Dirección de correo no registrada.';
+        _mensajeError = 'No se pudo enviar el código. Intenta de nuevo.';
       });
       return;
     }
+
+    // Por seguridad el backend siempre responde OK aunque el correo no exista,
+    // para no filtrar cuentas. El usuario lo descubre al validar el codigo.
+    final mensaje = reenviando
+        ? 'Se reenvió el código a tu correo institucional.'
+        : 'Se envió un código a tu correo institucional.';
+    final mensajeDebug = (kDebugMode && result.debugCodigo != null)
+        ? '$mensaje (Debug: ${result.debugCodigo})'
+        : mensaje;
 
     setState(() {
       _codigoEnviado = true;
-      _mensajeExito = 'Se ha enviado el código a tu correo (Demo: 123)';
-    });
-  }
-
-  Future<void> _reenviarCodigo() async {
-    FocusScope.of(context).unfocus();
-    final correo = _correoController.text.trim();
-    setState(_limpiarMensajes);
-
-    if (correo.isEmpty) {
-      setState(() {
-        _mensajeError =
-            'Proporciona tu correo institucional antes de reenviar el código.';
-      });
-      return;
-    }
-
-    final emailExists = await _apiService.resetPassword(correo, checkOnly: true);
-    if (!emailExists) {
-      setState(() {
-        _mensajeError = 'Dirección de correo no registrada.';
-      });
-      return;
-    }
-
-    if (!_codigoEnviado) {
-      setState(() {
-        _mensajeError =
-            'Aún no se envía un código porque no se ha proporcionado un correo.';
-      });
-      return;
-    }
-
-    await _mostrarCarga('Reenviando código');
-
-    setState(() {
-      _mensajeExito = 'Se ha reenviado el código';
+      _mensajeExito = mensajeDebug;
     });
   }
 
@@ -135,17 +108,9 @@ class _RecuperarContrasenaScreenState
       return;
     }
 
-    final emailExists = await _apiService.resetPassword(correo, checkOnly: true);
-    if (!emailExists) {
-      setState(() {
-        _mensajeError = 'Dirección de correo no registrada.';
-      });
-      return;
-    }
-
     if (!_codigoEnviado) {
       setState(() {
-        _mensajeError = 'Aún no se envió un código.';
+        _mensajeError = 'Aún no se solicitó un código.';
       });
       return;
     }
@@ -157,21 +122,10 @@ class _RecuperarContrasenaScreenState
       return;
     }
 
-    if (codigo != _codigoCorrecto) {
-      setState(() {
-        _mensajeError = 'Código incorrecto, vuelve a intentar.';
-      });
-      return;
-    }
-
-    await _mostrarCarga('Verificando');
-
-    if (!mounted) return;
-
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => RecuperarCuentaScreen(correo: correo),
+        builder: (_) => RecuperarCuentaScreen(correo: correo, codigo: codigo),
       ),
     );
   }
@@ -232,7 +186,7 @@ class _RecuperarContrasenaScreenState
               SizedBox(
                 height: 48,
                 child: OutlinedButton.icon(
-                  onPressed: _enviarCodigo,
+                  onPressed: () => _solicitarCodigo(),
                   icon: PhosphorIcon(
                     PhosphorIcons.paperPlaneTilt(PhosphorIconsStyle.bold),
                     size: 18,
@@ -254,7 +208,7 @@ class _RecuperarContrasenaScreenState
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: 'Ingresar código',
-                  hintText: '###',
+                  hintText: '######',
                   prefixIcon: const Icon(Icons.numbers),
                   suffixIcon: _codigoController.text.trim().isNotEmpty
                       ? const Icon(
@@ -269,7 +223,7 @@ class _RecuperarContrasenaScreenState
               SizedBox(
                 height: 48,
                 child: OutlinedButton.icon(
-                  onPressed: _reenviarCodigo,
+                  onPressed: () => _solicitarCodigo(reenviando: true),
                   icon: const Icon(Icons.refresh, size: 18),
                   label: const Text('Reenviar código'),
                 ),
@@ -317,8 +271,13 @@ class _RecuperarContrasenaScreenState
 
 class RecuperarCuentaScreen extends StatefulWidget {
   final String correo;
+  final String codigo;
 
-  const RecuperarCuentaScreen({super.key, required this.correo});
+  const RecuperarCuentaScreen({
+    super.key,
+    required this.correo,
+    required this.codigo,
+  });
 
   @override
   State<RecuperarCuentaScreen> createState() => _RecuperarCuentaScreenState();
@@ -391,17 +350,21 @@ class _RecuperarCuentaScreenState extends State<RecuperarCuentaScreen> {
 
     await _mostrarCarga('Actualizando contraseña');
 
-    final success = await _apiService.resetPassword(widget.correo, newPassword: nueva);
-    print('DEBUG RESET: Actualización de ${widget.correo} exitosa? $success');
+    final success = await _apiService.confirmPasswordReset(
+      email: widget.correo,
+      codigo: widget.codigo,
+      newPassword: nueva,
+    );
+
+    if (!mounted) return;
 
     if (!success) {
       setState(() {
-        _mensajeError = 'Error al actualizar contraseña. Intente más tarde.';
+        _mensajeError =
+            'No se pudo actualizar la contraseña. El código pudo expirar; vuelve a solicitar uno.';
       });
       return;
     }
-
-    if (!mounted) return;
 
     Navigator.pushReplacement(
       context,
