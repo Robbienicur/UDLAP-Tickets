@@ -118,6 +118,39 @@
 
 ---
 
+## 📱 Capturas de Pantalla
+
+<div align="center">
+
+<table>
+<tr>
+<td align="center" width="25%">
+  <img src="assets/screenshots/01-login.jpg" width="220" alt="Pantalla de inicio de sesión"><br>
+  <sub><b>Iniciar sesión</b></sub><br>
+  <sub>Acceso institucional o modo invitado</sub>
+</td>
+<td align="center" width="25%">
+  <img src="assets/screenshots/02-inicio.jpg" width="220" alt="Pantalla de inicio"><br>
+  <sub><b>Inicio</b></sub><br>
+  <sub>Compra rápida desde el home</sub>
+</td>
+<td align="center" width="25%">
+  <img src="assets/screenshots/03-mis-boletos.jpg" width="220" alt="Mis boletos"><br>
+  <sub><b>Mis boletos</b></sub><br>
+  <sub>Códigos QR escaneables</sub>
+</td>
+<td align="center" width="25%">
+  <img src="assets/screenshots/04-mi-perfil.jpg" width="220" alt="Mi perfil"><br>
+  <sub><b>Mi perfil</b></sub><br>
+  <sub>Cuenta, ayuda y términos</sub>
+</td>
+</tr>
+</table>
+
+</div>
+
+---
+
 ## 🏗 Arquitectura
 
 La plataforma se divide en dos componentes que conviven en este monorepo:

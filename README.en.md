@@ -118,6 +118,39 @@
 
 ---
 
+## 📱 Screenshots
+
+<div align="center">
+
+<table>
+<tr>
+<td align="center" width="25%">
+  <img src="assets/screenshots/01-login.jpg" width="220" alt="Login screen"><br>
+  <sub><b>Sign in</b></sub><br>
+  <sub>Institutional access or guest mode</sub>
+</td>
+<td align="center" width="25%">
+  <img src="assets/screenshots/02-inicio.jpg" width="220" alt="Home screen"><br>
+  <sub><b>Home</b></sub><br>
+  <sub>Quick purchase from the home tab</sub>
+</td>
+<td align="center" width="25%">
+  <img src="assets/screenshots/03-mis-boletos.jpg" width="220" alt="My tickets"><br>
+  <sub><b>My tickets</b></sub><br>
+  <sub>Scannable QR codes</sub>
+</td>
+<td align="center" width="25%">
+  <img src="assets/screenshots/04-mi-perfil.jpg" width="220" alt="My profile"><br>
+  <sub><b>My profile</b></sub><br>
+  <sub>Account, help and terms</sub>
+</td>
+</tr>
+</table>
+
+</div>
+
+---
+
 ## 🏗 Architecture
 
 The platform is split into two components that live in this monorepo:
